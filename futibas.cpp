@@ -1,6 +1,7 @@
 #include <GL/glut.h>
 #include <cmath>
 #include <iostream> 
+#include "scoreboard.h"
 
 constexpr float PI = 3.14159265358979323846f;
 
@@ -122,6 +123,11 @@ void display() {
 
     drawFieldLines();
 
+    drawScoreboard(winW, winH);
+
+    // butaos de teste
+    drawTestButtons(winW, winH);
+
     glutSwapBuffers();
 }
 
@@ -148,14 +154,21 @@ void updateMouseWorldCoords(int x, int y) {
     }
     
     // a janela vai de (0,0) no topo esquerdo ate winW, winG no fundo direitio
-    // dai precisamo  converter isso para as coordenadas X e Y do campo
+    // dai precisamo  converter isso para as coordenadas x e y do campo
     mouseWorldX = left + (static_cast<float>(x) / winW) * (right - left);
-    mouseWorldY = top - (static_cast<float>(y) / winH) * (top - bottom); // inverte Y porque o openg cresce para cima
+    mouseWorldY = top - (static_cast<float>(y) / winH) * (top - bottom); 
+    // inverte Y porque o openg cresce para cima
 }
 
-// Evento de clique do mouse
 void mouseClick(int button, int state, int x, int y) {
     if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
+        
+        // butaos de teste
+        if (checkButtonLeftClick(x, y, winW, winH) || checkButtonRightClick(x, y, winW, winH)) {
+            glutPostRedisplay();
+            return;
+        }
+
         isZoomed = !isZoomed;
         
         if (isZoomed) {

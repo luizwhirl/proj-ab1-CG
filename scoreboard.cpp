@@ -1,0 +1,190 @@
+#include "scoreboard.h"
+#include <GL/glut.h>
+#include <string>
+
+// NESTA VILA ESTÃO
+// PROIBIDOS ANIMAIS E
+// CRIANÇAS PEQUENAS
+
+int scoreLeft = 1;
+int scoreRight = 7;
+
+// btn -> button
+const int btnW = 50;
+const int btnH = 50;
+const int margin = 20;
+
+// funcao aux pra renderizar o texto
+void drawText(int x, int y, const std::string& text) {
+    glRasterPos2i(x, y);
+    for (char c : text) {
+        glutBitmapCharacter(GLUT_BITMAP_HELVETICA_18, c);
+    }
+}
+
+// rendreriza texto menor
+void drawSmallText(int x, int y, const std::string& text) {
+    glRasterPos2i(x, y);
+    for (char c : text) {
+        glutBitmapCharacter(GLUT_BITMAP_HELVETICA_12, c);
+    }
+}
+
+// HUD do placar no bagui se liga mermao
+void beginHUD(int winW, int winH) {
+    glMatrixMode(GL_PROJECTION);
+    glPushMatrix();
+    glLoadIdentity();
+    glOrtho(0, winW, winH, 0, -1.0, 1.0); // (0,0) -> posicao no canto superior esquerdo
+    
+    glMatrixMode(GL_MODELVIEW);
+    glPushMatrix();
+    glLoadIdentity();
+}
+
+void endHUD() {
+    glMatrixMode(GL_PROJECTION);
+    glPopMatrix();
+    glMatrixMode(GL_MODELVIEW);
+    glPopMatrix();
+}
+
+void drawScoreboard(int winW, int winH) {
+    beginHUD(winW, winH);
+
+    int startX = 20;
+    int startY = 20;
+    int h = 30;
+
+    // brasil fundo
+    glColor3f(0.9f, 0.9f, 0.9f);
+    glBegin(GL_QUADS);
+        glVertex2i(startX, startY);
+        glVertex2i(startX + 85, startY);
+        glVertex2i(startX + 85, startY + h);
+        glVertex2i(startX, startY + h);
+    glEnd();
+
+    // """"""""""""""bandeira"""""""""""""")
+    glColor3f(0.0f, 0.6f, 0.0f);
+    glBegin(GL_QUADS); glVertex2i(startX + 5, startY + 6); glVertex2i(startX + 28, startY + 6); glVertex2i(startX + 28, startY + 24); glVertex2i(startX + 5, startY + 24); glEnd();
+    glColor3f(1.0f, 0.9f, 0.0f); 
+    glBegin(GL_QUADS); glVertex2i(startX + 10, startY + 10); glVertex2i(startX + 23, startY + 10); glVertex2i(startX + 23, startY + 20); glVertex2i(startX + 10, startY + 20); glEnd();
+
+    glColor3f(0.0f, 0.0f, 0.0f);
+    drawText(startX + 35, startY + 21, "BRA");
+
+
+    // seção central do placa r - azul
+    glColor3f(0.2f, 0.5f, 0.8f);
+    glBegin(GL_QUADS);
+        glVertex2i(startX + 85, startY);
+        glVertex2i(startX + 145, startY);
+        glVertex2i(startX + 145, startY + h);
+        glVertex2i(startX + 85, startY + h);
+    glEnd();
+
+    // numeros do pracaar
+    glColor3f(1.0f, 1.0f, 1.0f);
+    std::string scoreStr = std::to_string(scoreLeft) + " - " + std::to_string(scoreRight);
+    int textWidth = scoreStr.length() * 9; 
+    drawText(startX + 115 - textWidth / 2, startY + 21, scoreStr);
+
+
+    // alemanha
+    glColor3f(0.9f, 0.9f, 0.9f);
+    glBegin(GL_QUADS);
+        glVertex2i(startX + 145, startY);
+        glVertex2i(startX + 230, startY);
+        glVertex2i(startX + 230, startY + h);
+        glVertex2i(startX + 145, startY + h);
+    glEnd();
+
+    glColor3f(0.0f, 0.0f, 0.0f);
+    drawText(startX + 155, startY + 21, "ALE");
+
+    // """"""""""""bandeira""""""""""""
+    int fX = startX + 198;
+    int fY = startY + 6;
+    glColor3f(0.0f, 0.0f, 0.0f);
+    glBegin(GL_QUADS); glVertex2i(fX, fY); glVertex2i(fX + 23, fY); glVertex2i(fX + 23, fY + 6); glVertex2i(fX, fY + 6); glEnd();
+    glColor3f(0.8f, 0.0f, 0.0f);
+    glBegin(GL_QUADS); glVertex2i(fX, fY + 6); glVertex2i(fX + 23, fY + 6); glVertex2i(fX + 23, fY + 12); glVertex2i(fX, fY + 12); glEnd();
+    glColor3f(1.0f, 0.8f, 0.0f);
+    glBegin(GL_QUADS); glVertex2i(fX, fY + 12); glVertex2i(fX + 23, fY + 12); glVertex2i(fX + 23, fY + 18); glVertex2i(fX, fY + 18); glEnd();
+
+
+    // // tempo
+    // int timeY = startY + h;
+    
+    // // é pra ser um relogio mas qqr cois a gente ignora
+    // glColor3f(0.4f, 0.6f, 0.2f);
+    // glBegin(GL_QUADS);
+    //     glVertex2i(startX + 85, timeY);
+    //     glVertex2i(startX + 160, timeY);
+    //     glVertex2i(startX + 160, timeY + 16);
+    //     glVertex2i(startX + 85, timeY + 16);
+    // glEnd();
+
+    // // borda de viado
+    // glColor3f(0.2f, 0.4f, 0.1f);
+    // glBegin(GL_QUADS);
+    //     glVertex2i(startX + 85, timeY + 16);
+    //     glVertex2i(startX + 160, timeY + 16);
+    //     glVertex2i(startX + 160, timeY + 20);
+    //     glVertex2i(startX + 85, timeY + 20);
+    // glEnd();
+
+    // // tempo e tempo 
+    // glColor3f(1.0f, 1.0f, 1.0f);
+    // drawSmallText(startX + 95, timeY + 12, "2T 45:56");
+
+    // endHUD();
+}
+
+// butaos de teste - placeholder 
+void drawTestButtons(int winW, int winH) {
+    beginHUD(winW, winH);
+    
+    // eskerdo 
+    glColor3f(0.2f, 0.2f, 0.8f);
+    glBegin(GL_QUADS);
+        glVertex2i(margin, winH / 2 - btnH/2);
+        glVertex2i(margin + btnW, winH / 2 - btnH/2);
+        glVertex2i(margin + btnW, winH / 2 + btnH/2);
+        glVertex2i(margin, winH / 2 + btnH/2);
+    glEnd();
+    glColor3f(1.0f, 1.0f, 1.0f);
+    drawText(margin + 15, winH / 2 + 6, "+1");
+
+    // direito 👉👉
+    glColor3f(0.8f, 0.2f, 0.2f);
+        glBegin(GL_QUADS);
+        glVertex2i(winW - margin - btnW, winH / 2 - btnH/2);
+        glVertex2i(winW - margin, winH / 2 - btnH/2);
+        glVertex2i(winW - margin, winH / 2 + btnH/2);
+        glVertex2i(winW - margin - btnW, winH / 2 + btnH/2);
+    glEnd();
+    glColor3f(1.0f, 1.0f, 1.0f);
+    drawText(winW - margin - btnW + 15, winH / 2 + 6, "+1");
+
+    endHUD();
+}
+
+bool checkButtonLeftClick(int x, int y, int winW, int winH) {
+    if (x >= margin && x <= margin + btnW &&
+        y >= winH / 2 - btnH/2 && y <= winH / 2 + btnH/2) {
+        scoreLeft++;
+        return true;
+    }
+    return false;
+}
+
+bool checkButtonRightClick(int x, int y, int winW, int winH) {
+    if (x >= winW - margin - btnW && x <= winW - margin &&
+        y >= winH / 2 - btnH/2 && y <= winH / 2 + btnH/2) {
+        scoreRight++;
+        return true;
+    }
+    return false;
+}
