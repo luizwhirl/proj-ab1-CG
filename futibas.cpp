@@ -1,18 +1,19 @@
 #include <GL/glut.h>
-#include <math.h>
+#include <cmath>
+#include <iostream> 
 
-#define PI 3.14159265358979323846
+constexpr float PI = 3.14159265358979323846f;
 
 int winW = 600, winH = 800;
-int isZoomed = 0;
+bool isZoomed = false;
 float mouseWorldX = 0.0f, mouseWorldY = 0.0f;
 
 void drawCircle(float cx, float cy, float r, int num_segments) {
     glBegin(GL_LINE_LOOP);
     for (int i = 0; i < num_segments; i++) {
-        float theta = 2.0f * PI * (float)i / (float)num_segments;
-        float x = r * cosf(theta);
-        float y = r * sinf(theta);
+        float theta = 2.0f * PI * static_cast<float>(i) / static_cast<float>(num_segments);
+        float x = r * std::cos(theta);
+        float y = r * std::sin(theta);
         glVertex2f(cx + x, cy + y);
     }
     glEnd();
@@ -36,7 +37,7 @@ void drawFieldLines() {
         glVertex2f( 3.0f, 0.0f);
     glEnd();
 
-    // meio do meio do campo - o c´riculo
+    // meio do meio do campo - o círculo
     drawCircle(0.0f, 0.0f, 1.0f, 36);
 
     // lado dibaxo - grande area
@@ -63,7 +64,7 @@ void drawFieldLines() {
         glVertex2f( 1.5f,  5.0f);
     glEnd();
 
-    // lado di xima 2 - pquenea area hahahahahahahaha
+    // lado di xima 2 - pquenea area 
     glBegin(GL_LINE_STRIP);
         glVertex2f(-0.6f,  5.0f);
         glVertex2f(-0.6f,  4.2f);
@@ -72,13 +73,11 @@ void drawFieldLines() {
     glEnd();
 }
 
-// Configura a câmera para a visão ortográfica, ajustando o campo de visão com base no zoom e na posição do mouse
-// obrigado pelo comentario coplot
 void setupCamera() {
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
 
-    float aspect = (float)winW / (float)winH;
+    float aspect = static_cast<float>(winW) / static_cast<float>(winH);
     float size = 6.0f;
     float left, right, bottom, top;
 
@@ -135,11 +134,11 @@ void reshape(int w, int h) {
 
 // convert a posição do mouse (em pixels) para o sistema de coordenadas do opengiló
 void updateMouseWorldCoords(int x, int y) {
-    float aspect = (float)winW / (float)winH;
+    float aspect = static_cast<float>(winW) / static_cast<float>(winH);
     float size = 6.0f;
     float left, right, bottom, top;
 
-    // rekalkula o tamanho total para mapear corretamente (isso sem o zoom
+    // rekalkula o tamanho total para mapear corretamente (isso sem o zoom)
     if (winW <= winH) {
         left = -size; right = size;
         bottom = -size / aspect; top = size / aspect;
@@ -147,10 +146,11 @@ void updateMouseWorldCoords(int x, int y) {
         left = -size * aspect; right = size * aspect;
         bottom = -size; top = size;
     }
-    //a janela vai de (0,0) no topo esquerdo ate winW, winG no fundo direitio
+    
+    // a janela vai de (0,0) no topo esquerdo ate winW, winG no fundo direitio
     // dai precisamo  converter isso para as coordenadas X e Y do campo
-    mouseWorldX = left + ((float)x / winW) * (right - left);
-    mouseWorldY = top - ((float)y / winH) * (top - bottom); // inverte Y porque o openg cresce para cima
+    mouseWorldX = left + (static_cast<float>(x) / winW) * (right - left);
+    mouseWorldY = top - (static_cast<float>(y) / winH) * (top - bottom); // inverte Y porque o openg cresce para cima
 }
 
 // Evento de clique do mouse
@@ -185,7 +185,7 @@ int main(int argc, char** argv) {
     glutInit(&argc, argv);
     glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_MULTISAMPLE);
     glutInitWindowSize(600, 800);
-    glutCreateWindow("Campo Interativo - Clique para Zoom");
+    glutCreateWindow("Campo c Zum");
 
     init();
 
