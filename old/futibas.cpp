@@ -156,16 +156,37 @@ void display() {
     glEnable(GL_TEXTURE_2D);
     glBindTexture(GL_TEXTURE_2D, grassTexture);
     
-    glColor3f(1.0f, 1.0f, 1.0f); 
-
     // esse repeats via definr quantas vezes a etxtura da grama vai se repetir
     float repeats = 15.0f; 
 
+    // lógica de faixas
+    int numFaixas = 11; // 11 faixas distribuidas ao longo (nisso bem distribuído de -5.5 a 5.5)
+    float campoInicioY = -5.5f;
+    float campoFimY = 5.5f;
+    float alturaFaixa = (campoFimY - campoInicioY) / numFaixas;
+
     glBegin(GL_QUADS);
-        glTexCoord2f(0.0f, 0.0f);       glVertex2f(-3.5f, -5.5f);
-        glTexCoord2f(repeats, 0.0f);    glVertex2f( 3.5f, -5.5f);
-        glTexCoord2f(repeats, repeats); glVertex2f( 3.5f,  5.5f);
-        glTexCoord2f(0.0f, repeats);    glVertex2f(-3.5f,  5.5f);
+    for (int i = 0; i < numFaixas; ++i) {
+        float yBase = campoInicioY + i * alturaFaixa;
+        float yTopo = yBase + alturaFaixa;
+
+        // altaernancia de cores de casa lado
+        if (i % 2 == 0) {
+            glColor3f(1.0f, 1.0f, 1.0f); // tim base da textura - claro
+        } else {
+            glColor3f(0.85f, 0.90f, 0.85f); // multiplika a textura por um tom mais escuro
+        }
+
+        // calkuloda coordenada UV da textura para que ela não quebre na divisa das faixas
+        float vBase = (yBase - campoInicioY) / (campoFimY - campoInicioY) * repeats;
+        float vTopo = (yTopo - campoInicioY) / (campoFimY - campoInicioY) * repeats;
+
+        // faixa horizontal
+        glTexCoord2f(0.0f, vBase);       glVertex2f(-3.5f, yBase);
+        glTexCoord2f(repeats, vBase);    glVertex2f( 3.5f, yBase);
+        glTexCoord2f(repeats, vTopo);    glVertex2f( 3.5f, yTopo);
+        glTexCoord2f(0.0f, vTopo);       glVertex2f(-3.5f, yTopo);
+    }
     glEnd();
 
     glDisable(GL_TEXTURE_2D);
