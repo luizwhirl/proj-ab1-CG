@@ -1,6 +1,8 @@
 #include <GL/glut.h>
 #include <cmath>
 #include <iostream> 
+#include <cstdlib> // rand() e srand()
+#include <ctime>   // time()
 #include "scoreboard.h"
 
 constexpr float PI = 3.14159265358979323846f;
@@ -8,6 +10,45 @@ constexpr float PI = 3.14159265358979323846f;
 int winW = 600, winH = 800;
 bool isZoomed = false;
 float mouseWorldX = 0.0f, mouseWorldY = 0.0f;
+
+// variavel do id da grama random
+GLuint grassTexture;
+
+// gerar nossa graminha randomizada
+void createGrassTexture() {
+    const int TEX_SIZE = 128; // 128x128 pixels 
+    unsigned char data[TEX_SIZE * TEX_SIZE * 3];
+
+    // paleta de cores no carai
+    unsigned char palette[4][3] = {
+        { 90, 145,  65},  // verde médio base
+        {105, 160,  70},  // verde mais claro
+        { 75, 120,  50},  // verde escuro
+        {110, 130,  55}   // verde amarelado
+    };
+
+    for (int i = 0; i < TEX_SIZE * TEX_SIZE; ++i) {
+        int colorIndex = rand() % 4;
+        
+        data[i * 3]     = palette[colorIndex][0];
+        data[i * 3 + 1] = palette[colorIndex][1];
+        data[i * 3 + 2] = palette[colorIndex][2];
+    }
+
+    glGenTextures(1, &grassTexture);
+    glBindTexture(GL_TEXTURE_2D, grassTexture);
+    
+    // enviando dados da textura para o opengll
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, TEX_SIZE, TEX_SIZE, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+
+    //  - nao aplica blur ao escalajar
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+    // rete a a rexteura ao longo do campo
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+}
 
 void drawCircle(float cx, float cy, float r, int num_segments) {
     glBegin(GL_LINE_LOOP);
@@ -112,14 +153,22 @@ void display() {
     
     setupCamera();
 
-    // grass
-    glColor3f(0.13f, 0.55f, 0.13f);
+    glEnable(GL_TEXTURE_2D);
+    glBindTexture(GL_TEXTURE_2D, grassTexture);
+    
+    glColor3f(1.0f, 1.0f, 1.0f); 
+
+    // esse repeats via definr quantas vezes a etxtura da grama vai se repetir
+    float repeats = 15.0f; 
+
     glBegin(GL_QUADS);
-        glVertex2f(-3.5f, -5.5f);
-        glVertex2f( 3.5f, -5.5f);
-        glVertex2f( 3.5f,  5.5f);
-        glVertex2f(-3.5f,  5.5f);
+        glTexCoord2f(0.0f, 0.0f);       glVertex2f(-3.5f, -5.5f);
+        glTexCoord2f(repeats, 0.0f);    glVertex2f( 3.5f, -5.5f);
+        glTexCoord2f(repeats, repeats); glVertex2f( 3.5f,  5.5f);
+        glTexCoord2f(0.0f, repeats);    glVertex2f(-3.5f,  5.5f);
     glEnd();
+
+    glDisable(GL_TEXTURE_2D);
 
     drawFieldLines();
 
@@ -192,6 +241,10 @@ void init() {
     glHint(GL_LINE_SMOOTH_HINT, GL_NICEST);
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    
+    // inicializa a seed do rand()
+    srand(static_cast<unsigned int>(time(NULL)));
+    createGrassTexture();
 }
 
 int main(int argc, char** argv) {
