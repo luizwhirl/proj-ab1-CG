@@ -72,6 +72,8 @@ void Game::display() {
 
     scoreboard.draw(winW, winH);
 
+    bola.draw();
+
     // butaos de teste
     scoreboard.drawTestButtons(winW, winH);
 
@@ -103,7 +105,7 @@ void Game::mouseClick(int button, int state, int x, int y) {
     }
 }
 
-// passivo igual lucas
+// passivo igual lucas (????????)
 void Game::mousePassiveMotion(int x, int y) {
     if (input.isZoomed) {
         input.updateMouseWorldCoords(x, y, winW, winH);
@@ -111,8 +113,27 @@ void Game::mousePassiveMotion(int x, int y) {
     }
 }
 
+// configurar o movimento da minha bola
+void Game::keyboardClick(unsigned char key, int x, int y) {
+    if(key == 'w') {
+        bola.update('U');
+    }
+    if(key == 's') {
+        bola.update('D');
+    }
+    if(key == 'd') {
+        bola.update('R');
+    }
+    if(key == 'a') {
+        bola.update('L');
+    }
+
+    glutPostRedisplay();
+}
+
 // esses callbacks estáticos sao p/ conectar o c++ ao glut ne duuughhhh 
 void Game::displayCallback() { Game::getInstance()->display(); }
 void Game::reshapeCallback(int w, int h) { Game::getInstance()->reshape(w, h); }
 void Game::mouseClickCallback(int button, int state, int x, int y) { Game::getInstance()->mouseClick(button, state, x, y); }
 void Game::mousePassiveMotionCallback(int x, int y) { Game::getInstance()->mousePassiveMotion(x, y); }
+void Game::keyboardClickCallback(unsigned char key, int x, int y) { Game::getInstance()->keyboardClick(key, x, y); }
