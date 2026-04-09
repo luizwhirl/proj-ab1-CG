@@ -113,22 +113,30 @@ void Game::mousePassiveMotion(int x, int y) {
     }
 }
 
-// configurar o movimento da minha bola
+// verifica se a tecla foi clicada
 void Game::keyboardClick(unsigned char key, int x, int y) {
-    if(key == 'w') {
-        bola.update('U');
-    }
-    if(key == 's') {
-        bola.update('D');
-    }
-    if(key == 'd') {
-        bola.update('R');
-    }
-    if(key == 'a') {
-        bola.update('L');
-    }
+    if (key == 'w' || key == 'W') input.isWPressed = true;
+    if (key == 'a' || key == 'A') input.isAPressed = true;
+    if (key == 's' || key == 'S') input.isSPressed = true;
+    if (key == 'd' || key == 'D') input.isDPressed = true;
 
     glutPostRedisplay();
+}
+
+// ve se a tecla foi solto
+void Game::keyboardUp(unsigned char key, int x, int y) {
+    if (key == 'w' || key == 'W') input.isWPressed = false;
+    if (key == 'a' || key == 'A') input.isAPressed = false;
+    if (key == 's' || key == 'S') input.isSPressed = false;
+    if (key == 'd' || key == 'D') input.isDPressed = false;
+
+    glutPostRedisplay();
+}
+
+void Game::updateBall(){
+    if(input.isWPressed == true){
+        bola.update('W');
+    }
 }
 
 // esses callbacks estáticos sao p/ conectar o c++ ao glut ne duuughhhh 

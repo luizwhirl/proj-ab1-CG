@@ -29,6 +29,8 @@ public:
     void mouseClick(int button, int state, int x, int y);
     void mousePassiveMotion(int x, int y);
     void keyboardClick(unsigned char key, int x, int y);
+    void keyboardUp(unsigned char key, int x, int y);
+    void updateBall();
 
     static Game* getInstance();
 

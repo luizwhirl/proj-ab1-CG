@@ -26,16 +26,16 @@ void Bola::draw() {
 // mover a bola por ai
 void Bola::update(char direction) {
     switch (direction) {
-    case 'R':
+    case 'D':
         x+= 0.1f;
         break;
-    case 'L':
+    case 'A':
         x-= 0.1f;
         break;
-    case 'U':
+    case 'W':
         y+= 0.1f;
         break;
-    case 'D':
+    case 'S':
         y-= 0.1f;
         break;
     default:
