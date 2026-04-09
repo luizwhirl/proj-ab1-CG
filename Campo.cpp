@@ -1,21 +1,14 @@
-#include <GL/glut.h>
+#include "Campo.h"
 #include <cmath>
-#include <iostream> 
-#include <cstdlib> // rand() e srand()
-#include <ctime>   // time()
-#include "scoreboard.h"
+#include <cstdlib>
 
 constexpr float PI = 3.14159265358979323846f;
 
-int winW = 600, winH = 800;
-bool isZoomed = false;
-float mouseWorldX = 0.0f, mouseWorldY = 0.0f;
+Campo::Campo() {
+    grassTexture = 0;
+}
 
-// variavel do id da grama random
-GLuint grassTexture;
-
-// gerar nossa graminha randomizada
-void createGrassTexture() {
+void Campo::createGrassTexture() {
     const int TEX_SIZE = 128; // 128x128 pixels 
     unsigned char data[TEX_SIZE * TEX_SIZE * 3];
 
@@ -50,7 +43,7 @@ void createGrassTexture() {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 }
 
-void drawCircle(float cx, float cy, float r, int num_segments) {
+void Campo::drawCircle(float cx, float cy, float r, int num_segments) {
     glBegin(GL_LINE_LOOP);
     for (int i = 0; i < num_segments; i++) {
         float theta = 2.0f * PI * static_cast<float>(i) / static_cast<float>(num_segments);
@@ -62,7 +55,7 @@ void drawCircle(float cx, float cy, float r, int num_segments) {
 }
 
 // desenhar as linhas do campo na vertical
-void drawFieldLines() {
+void Campo::drawFieldLines() {
     glColor3f(1.0f, 1.0f, 1.0f);
     glLineWidth(2.0f);
 
@@ -115,44 +108,7 @@ void drawFieldLines() {
     glEnd();
 }
 
-void setupCamera() {
-    glMatrixMode(GL_PROJECTION);
-    glLoadIdentity();
-
-    float aspect = static_cast<float>(winW) / static_cast<float>(winH);
-    float size = 6.0f;
-    float left, right, bottom, top;
-
-    // calculo do limite da camera
-    if (winW <= winH) {
-        left = -size; right = size;
-        bottom = -size / aspect; top = size / aspect;
-    } else {
-        left = -size * aspect; right = size * aspect;
-        bottom = -size; top = size;
-    }
-
-    if (isZoomed) {
-        float zoomFactor = 0.35f;
-        float viewWidth = (right - left) * zoomFactor;
-        float viewHeight = (top - bottom) * zoomFactor;
-
-        left = mouseWorldX - viewWidth / 2.0f;
-        right = mouseWorldX + viewWidth / 2.0f;
-        bottom = mouseWorldY - viewHeight / 2.0f;
-        top = mouseWorldY + viewHeight / 2.0f;
-    }
-
-    glOrtho(left, right, bottom, top, -1.0, 1.0);
-    glMatrixMode(GL_MODELVIEW);
-    glLoadIdentity();
-}
-
-void display() {
-    glClear(GL_COLOR_BUFFER_BIT);
-    
-    setupCamera();
-
+void Campo::draw() {
     glEnable(GL_TEXTURE_2D);
     glBindTexture(GL_TEXTURE_2D, grassTexture);
     
@@ -192,96 +148,4 @@ void display() {
     glDisable(GL_TEXTURE_2D);
 
     drawFieldLines();
-
-    drawScoreboard(winW, winH);
-
-    // butaos de teste
-    drawTestButtons(winW, winH);
-
-    glutSwapBuffers();
-}
-
-void reshape(int w, int h) {
-    if (h == 0) h = 1;
-    winW = w;
-    winH = h;
-    glViewport(0, 0, w, h);
-}
-
-// convert a posição do mouse (em pixels) para o sistema de coordenadas do opengiló
-void updateMouseWorldCoords(int x, int y) {
-    float aspect = static_cast<float>(winW) / static_cast<float>(winH);
-    float size = 6.0f;
-    float left, right, bottom, top;
-
-    // rekalkula o tamanho total para mapear corretamente (isso sem o zoom)
-    if (winW <= winH) {
-        left = -size; right = size;
-        bottom = -size / aspect; top = size / aspect;
-    } else {
-        left = -size * aspect; right = size * aspect;
-        bottom = -size; top = size;
-    }
-    
-    // a janela vai de (0,0) no topo esquerdo ate winW, winG no fundo direitio
-    // dai precisamo  converter isso para as coordenadas x e y do campo
-    mouseWorldX = left + (static_cast<float>(x) / winW) * (right - left);
-    mouseWorldY = top - (static_cast<float>(y) / winH) * (top - bottom); 
-    // inverte Y porque o openg cresce para cima
-}
-
-void mouseClick(int button, int state, int x, int y) {
-    if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
-        
-        // butaos de teste
-        if (checkButtonLeftClick(x, y, winW, winH) || checkButtonRightClick(x, y, winW, winH)) {
-            glutPostRedisplay();
-            return;
-        }
-
-        isZoomed = !isZoomed;
-        
-        if (isZoomed) {
-            updateMouseWorldCoords(x, y);
-        }
-        glutPostRedisplay();
-    }
-}
-
-// passivo igual lucas
-void mousePassiveMotion(int x, int y) {
-    if (isZoomed) {
-        updateMouseWorldCoords(x, y);
-        glutPostRedisplay(); // atualiza continuamente a tela ne pq zoom i tals
-    }
-}
-
-void init() {
-    glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
-    glEnable(GL_LINE_SMOOTH);
-    glHint(GL_LINE_SMOOTH_HINT, GL_NICEST);
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    
-    // inicializa a seed do rand()
-    srand(static_cast<unsigned int>(time(NULL)));
-    createGrassTexture();
-}
-
-int main(int argc, char** argv) {
-    glutInit(&argc, argv);
-    glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_MULTISAMPLE);
-    glutInitWindowSize(600, 800);
-    glutCreateWindow("Campo c Zum");
-
-    init();
-
-    glutDisplayFunc(display);
-    glutReshapeFunc(reshape);
-    
-    glutMouseFunc(mouseClick);
-    glutPassiveMotionFunc(mousePassiveMotion);
-
-    glutMainLoop();
-    return 0;
 }

@@ -1,0 +1,16 @@
+#ifndef INPUTMANAGER_H
+#define INPUTMANAGER_H
+
+class InputManager {
+public:
+    bool isZoomed;
+    float mouseWorldX;
+    float mouseWorldY;
+
+    InputManager();
+    
+    // convert a posição do mouse (em pixels) para o sistema de coordenadas do opengiló
+    void updateMouseWorldCoords(int x, int y, int winW, int winH);
+};
+
+#endif

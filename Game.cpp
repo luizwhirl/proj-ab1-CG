@@ -1,0 +1,118 @@
+#include "Game.h"
+#include <GL/glut.h>
+#include <cstdlib> // rand() e srand()
+#include <ctime>   // time()
+
+Game* Game::instance = nullptr;
+
+Game::Game() {
+    winW = 600;
+    winH = 800;
+}
+
+Game* Game::getInstance() {
+    if (!instance) {
+        instance = new Game();
+    }
+    return instance;
+}
+
+void Game::init() {
+    glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
+    glEnable(GL_LINE_SMOOTH);
+    glHint(GL_LINE_SMOOTH_HINT, GL_NICEST);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    
+    // inicializa a seed do rand()
+    srand(static_cast<unsigned int>(time(NULL)));
+    
+    campo.createGrassTexture();
+}
+
+void Game::setupCamera() {
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+
+    float aspect = static_cast<float>(winW) / static_cast<float>(winH);
+    float size = 6.0f;
+    float left, right, bottom, top;
+
+    // calculo do limite da camera
+    if (winW <= winH) {
+        left = -size; right = size;
+        bottom = -size / aspect; top = size / aspect;
+    } else {
+        left = -size * aspect; right = size * aspect;
+        bottom = -size; top = size;
+    }
+
+    if (input.isZoomed) {
+        float zoomFactor = 0.35f;
+        float viewWidth = (right - left) * zoomFactor;
+        float viewHeight = (top - bottom) * zoomFactor;
+
+        left = input.mouseWorldX - viewWidth / 2.0f;
+        right = input.mouseWorldX + viewWidth / 2.0f;
+        bottom = input.mouseWorldY - viewHeight / 2.0f;
+        top = input.mouseWorldY + viewHeight / 2.0f;
+    }
+
+    glOrtho(left, right, bottom, top, -1.0, 1.0);
+    glMatrixMode(GL_MODELVIEW);
+    glLoadIdentity();
+}
+
+void Game::display() {
+    glClear(GL_COLOR_BUFFER_BIT);
+    
+    setupCamera();
+
+    campo.draw();
+
+    scoreboard.draw(winW, winH);
+
+    // butaos de teste
+    scoreboard.drawTestButtons(winW, winH);
+
+    glutSwapBuffers();
+}
+
+void Game::reshape(int w, int h) {
+    if (h == 0) h = 1;
+    winW = w;
+    winH = h;
+    glViewport(0, 0, w, h);
+}
+
+void Game::mouseClick(int button, int state, int x, int y) {
+    if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
+        
+        // mas primeiro vamos checar os botoes de teste (scoreboard resolve e checa a logica)
+        if (scoreboard.checkButtonLeftClick(x, y, winW, winH) || scoreboard.checkButtonRightClick(x, y, winW, winH)) {
+            glutPostRedisplay();
+            return;
+        }
+
+        input.isZoomed = !input.isZoomed;
+        
+        if (input.isZoomed) {
+            input.updateMouseWorldCoords(x, y, winW, winH);
+        }
+        glutPostRedisplay();
+    }
+}
+
+// passivo igual lucas
+void Game::mousePassiveMotion(int x, int y) {
+    if (input.isZoomed) {
+        input.updateMouseWorldCoords(x, y, winW, winH);
+        glutPostRedisplay(); // atualiza continuamente a tela ne pq zoom i tals
+    }
+}
+
+// esses callbacks estáticos sao p/ conectar o c++ ao glut ne duuughhhh 
+void Game::displayCallback() { Game::getInstance()->display(); }
+void Game::reshapeCallback(int w, int h) { Game::getInstance()->reshape(w, h); }
+void Game::mouseClickCallback(int button, int state, int x, int y) { Game::getInstance()->mouseClick(button, state, x, y); }
+void Game::mousePassiveMotionCallback(int x, int y) { Game::getInstance()->mousePassiveMotion(x, y); }
