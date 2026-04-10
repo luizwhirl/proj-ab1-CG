@@ -252,6 +252,92 @@ void Campo::draw() {
 
     drawFieldLines();
 
+    // eai luca s num sei o que  
+    // seguinte, mais tarde a gente quando for dar merge
+    // vamo ajusar o código pra desenhar a bola aqui
+    // ah mas por quê? 
+    // meia noite eu te conto
+
     // os gol ssao desenhados por cima de tudo no campo
     drawGoals();
+}
+
+// metodo - checar colisao com as paredes/traves da rede
+void Campo::tratarColisaoGol(float& bolaX, float& bolaY, float& velX, float& velY, float raio) {
+    float W = 0.45f; // largura do gol
+    float D = 0.4f;  // profundidade do gol
+
+    // gol di cima
+    // checa se a bola chegou perto da linha do gol do norte ou entrou
+    if (bolaY + raio > 5.0f && bolaX > -W - raio && bolaX < W + raio) {
+        
+        // coolisão com a rede do fundo
+        if (bolaY + raio > 5.0f + D) {
+            bolaY = 5.0f + D - raio;
+            velY = -velY; // inverte a velocidade para quicar
+        }
+        
+        // cooolisão com a rede lateral esquerda - pelo lado de drentro
+        if (bolaX - raio < -W && bolaY > 5.0f) {
+            bolaX = -W + raio;
+            velX = -velX;
+        }
+        
+        // coolisão com a rede lateral direita - pelo lado de derntro
+        if (bolaX + raio > W && bolaY > 5.0f) {
+            bolaX = W - raio;
+            velX = -velX;
+        }
+        
+        // colisão da bola -por fora ou por dentro- exatamente nas traves laterais 
+        // trv esqrd em (-W, 5.0)
+        float distEsq = std::sqrt(std::pow(bolaX - (-W), 2) + std::pow(bolaY - 5.0f, 2));
+        if (distEsq < raio) {
+            velX = -velX; 
+            velY = -velY; 
+        }
+        // trv drt em (W, 5.0)
+        float distDir = std::sqrt(std::pow(bolaX - W, 2) + std::pow(bolaY - 5.0f, 2));
+        if (distDir < raio) {
+            velX = -velX;
+            velY = -velY;
+        }
+    }
+    
+    // gol dibaxo
+    // if a bola chegou perto da linha do gol do sul ou entrou
+    if (bolaY - raio < -5.0f && bolaX > -W - raio && bolaX < W + raio) {
+        
+        // coolisão com a rede do fundo
+        if (bolaY - raio < -5.0f - D) {
+            bolaY = -5.0f - D + raio;
+            velY = -velY; // inverte a velocidade para quicar tbmmmm ebaa
+        }
+        
+        // coolisão com a rede lateral esquerda - por dento  tambem
+        if (bolaX - raio < -W && bolaY < -5.0f) {
+            bolaX = -W + raio;
+            velX = -velX;
+        }
+        
+        // clisao com a rede lateral direita - é dento
+        if (bolaX + raio > W && bolaY < -5.0f) {
+            bolaX = W - raio;
+            velX = -velX;
+        }
+        
+        // colisão pontual com os postes do sul
+        // trv esqrd em (-W, -5.0)
+        float distEsq = std::sqrt(std::pow(bolaX - (-W), 2) + std::pow(bolaY - (-5.0f), 2));
+        if (distEsq < raio) {
+            velX = -velX;
+            velY = -velY;
+        }
+        // trv dirt em (W, -5.0)
+        float distDir = std::sqrt(std::pow(bolaX - W, 2) + std::pow(bolaY - (-5.0f), 2));
+        if (distDir < raio) {
+            velX = -velX;
+            velY = -velY;
+        }
+    }
 }

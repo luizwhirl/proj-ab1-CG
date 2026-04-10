@@ -12,7 +12,6 @@ private:
     void drawFieldLines();
 
     // metodos para desenhar os placeholders e as traves
-    void drawArquibancadas();
     void drawGoals();
 
 public:
@@ -21,6 +20,9 @@ public:
     // gerar nossa graminha randomizada
     void createGrassTexture();
     void draw();
+
+    // metodo para tratar a colisao da bola com os gols
+    void tratarColisaoGol(float& bolaX, float& bolaY, float& velX, float& velY, float raioBola);
 };
 
 #endif
