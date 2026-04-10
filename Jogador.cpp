@@ -1,13 +1,13 @@
-#include "Bola.h"
+#include "Jogador.h"
 #include <GL/glut.h>
 #include <utility>
 
-Bola::Bola() {
-    x = 0.0f;
-    y = 0.0f;
+Jogador::Jogador() {
+    x = 1.0f;
+    y = 1.0f;
 }
 
-void Bola::draw() {
+void Jogador::draw() {
     glPushMatrix(); 
     
     glTranslatef(x, y, 0.0f); 
@@ -20,11 +20,20 @@ void Bola::draw() {
         glVertex2f(-0.1f,  0.1f); 
     glEnd();
 
+    glColor3f(0.0f, 0.0f, 0.0f);
+    glBegin(GL_QUADS);
+        glVertex2f(-0.2f, -0.2f);
+        glVertex2f( 0.2f, -0.2f);
+        glVertex2f( 0.2f,  0.2f);
+        glVertex2f(-0.2f,  0.2f); 
+    glEnd();
+
+
     glPopMatrix();
 }
 
-// mover a bola por ai
-void Bola::update(char direction) {
+// Jogador sai andando por ai
+void Jogador::update(char direction) {
     switch (direction) {
     case 'D':
         x+= 0.015f;

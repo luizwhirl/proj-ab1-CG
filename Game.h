@@ -5,6 +5,7 @@
 #include "Scoreboard.h"
 #include "InputManager.h"
 #include "Bola.h"
+#include "jogador.h"
 
 // Scene / Game State e Window / Context Manager
 class Game {
@@ -15,6 +16,7 @@ private:
     Scoreboard scoreboard;
     InputManager input;
     Bola bola;
+    Jogador jogador;
 
     static Game* instance;
 
@@ -30,7 +32,7 @@ public:
     void mousePassiveMotion(int x, int y);
     void keyboardClick(unsigned char key, int x, int y);
     void keyboardUp(unsigned char key, int x, int y);
-    void updateBall();
+    void updatePlayer();
 
     static Game* getInstance();
 
@@ -40,6 +42,8 @@ public:
     static void mouseClickCallback(int button, int state, int x, int y);
     static void mousePassiveMotionCallback(int x, int y);
     static void keyboardClickCallback(unsigned char key, int x, int y);
+    static void keyboardUpCallback(unsigned char key, int x, int y);
+    static void idleCallback();
 };
 
 #endif

@@ -17,6 +17,8 @@ int main(int argc, char** argv) {
     glutMouseFunc(Game::mouseClickCallback);
     glutPassiveMotionFunc(Game::mousePassiveMotionCallback);
     glutKeyboardFunc(Game::keyboardClickCallback);
+    glutKeyboardUpFunc(Game::keyboardUpCallback);
+    glutIdleFunc(Game::idleCallback);
 
     glutMainLoop();
     return 0;

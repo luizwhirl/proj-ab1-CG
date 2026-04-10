@@ -2,6 +2,8 @@
 #include <GL/glut.h>
 #include <cstdlib> // rand() e srand()
 #include <ctime>   // time()
+#include <stack>
+#include <iostream>
 
 Game* Game::instance = nullptr;
 
@@ -72,6 +74,8 @@ void Game::display() {
 
     scoreboard.draw(winW, winH);
 
+    jogador.draw();
+
     bola.draw();
 
     // butaos de teste
@@ -119,8 +123,6 @@ void Game::keyboardClick(unsigned char key, int x, int y) {
     if (key == 'a' || key == 'A') input.isAPressed = true;
     if (key == 's' || key == 'S') input.isSPressed = true;
     if (key == 'd' || key == 'D') input.isDPressed = true;
-
-    glutPostRedisplay();
 }
 
 // ve se a tecla foi solto
@@ -129,15 +131,37 @@ void Game::keyboardUp(unsigned char key, int x, int y) {
     if (key == 'a' || key == 'A') input.isAPressed = false;
     if (key == 's' || key == 'S') input.isSPressed = false;
     if (key == 'd' || key == 'D') input.isDPressed = false;
-
-    glutPostRedisplay();
 }
 
-void Game::updateBall(){
-    if(input.isWPressed == true){
-        bola.update('W');
+
+void Game::updatePlayer(){
+     std::stack<char> teclas;
+ 
+    if(input.isWPressed == true ) {
+        teclas.push('W');
     }
+
+    if(input.isAPressed == true ){
+        teclas.push('A');
+    }
+
+    if(input.isSPressed == true ){
+        teclas.push('S');
+    }
+
+    if(input.isDPressed == true ){
+        teclas.push('D');
+    }
+
+    while(!teclas.empty()){
+        char tecla = teclas.top();
+        jogador.update(tecla);
+        teclas.pop();
+    }
+
+      glutPostRedisplay();
 }
+
 
 // esses callbacks estáticos sao p/ conectar o c++ ao glut ne duuughhhh 
 void Game::displayCallback() { Game::getInstance()->display(); }
@@ -145,3 +169,5 @@ void Game::reshapeCallback(int w, int h) { Game::getInstance()->reshape(w, h); }
 void Game::mouseClickCallback(int button, int state, int x, int y) { Game::getInstance()->mouseClick(button, state, x, y); }
 void Game::mousePassiveMotionCallback(int x, int y) { Game::getInstance()->mousePassiveMotion(x, y); }
 void Game::keyboardClickCallback(unsigned char key, int x, int y) { Game::getInstance()->keyboardClick(key, x, y); }
+void Game::keyboardUpCallback(unsigned char key, int x, int y) { Game::getInstance()->keyboardUp(key, x, y); }
+void Game::idleCallback() { Game::getInstance()->updatePlayer(); }
