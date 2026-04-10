@@ -172,14 +172,16 @@ void Campo::drawGoals() {
     glEnd();
 
 
-    // trave dibaxo
+    float baseSul = -5.0f - D; 
+    float topoSul = baseSul + H; 
+
     // a rede é bawsicamente um retangulo simples projetado pra cima da tela
     glColor4f(0.8f, 0.8f, 0.8f, 0.3f);
     glBegin(GL_QUADS);
-        glVertex2f(-W, -5.0f);         // base esq
-        glVertex2f( W, -5.0f);         // base dir
-        glVertex2f( W, -5.0f + H);     // =topo dir
-        glVertex2f(-W, -5.0f + H);     // topo esq
+        glVertex2f(-W, baseSul);       // base esq
+        glVertex2f( W, baseSul);       // base dir
+        glVertex2f( W, topoSul);       // topo dir
+        glVertex2f(-W, topoSul);       // topo esq
     glEnd();
 
     //  rede - basicamente um grid d quadrados retos
@@ -188,11 +190,11 @@ void Campo::drawGoals() {
     glBegin(GL_LINES);
         // linhas verticais
         for (float x = -W; x <= W + 0.01f; x += 0.09f) {
-            glVertex2f(x, -5.0f);
-            glVertex2f(x, -5.0f + H);
+            glVertex2f(x, baseSul);
+            glVertex2f(x, topoSul);
         }
         // linhas horizontais
-        for (float y = -5.0f; y <= -5.0f + H + 0.01f; y += 0.09f) {
+        for (float y = baseSul; y <= topoSul + 0.01f; y += 0.09f) {
             glVertex2f(-W, y);
             glVertex2f( W, y);
         }
@@ -202,10 +204,10 @@ void Campo::drawGoals() {
     glColor3f(1.0f, 1.0f, 1.0f);
     glLineWidth(3.0f); 
     glBegin(GL_LINE_STRIP);
-        glVertex2f(-W, -5.0f);      // poste esq 
-        glVertex2f(-W, -5.0f + H);  // poste esq 
-        glVertex2f( W, -5.0f + H);  // crossbar 
-        glVertex2f( W, -5.0f);      // poste dir 
+        glVertex2f(-W, baseSul);      // poste esq 
+        glVertex2f(-W, topoSul);      // poste esq topo
+        glVertex2f( W, topoSul);      // crossbar 
+        glVertex2f( W, baseSul);      // poste dir 
     glEnd();
 
     glLineWidth(1.0f); 
