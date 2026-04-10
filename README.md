@@ -65,7 +65,8 @@ O `stb_image` precisa ser "instanciado" em apenas **um** arquivo `.cpp` do proje
 
 ```cpp
 // Transforma o header em um arquivo .cpp com a implementação
-// IMPORTANTE: Só declare isso em UM arquivo fonte do seu projeto!
+// IMPORTANTE: Só precisa declarar isso em UM arquivo fonte do projeto
+// Então uma vez que já tá declarado no campo, tá feito
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h" 
 ```
