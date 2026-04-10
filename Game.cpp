@@ -4,6 +4,7 @@
 #include <ctime>   // time()
 #include <stack>
 #include <iostream>
+#include <cmath> 
 
 Game* Game::instance = nullptr;
 
@@ -126,6 +127,7 @@ void Game::keyboardClick(unsigned char key, int x, int y) {
     if (key == 'a' || key == 'A') input.isAPressed = true;
     if (key == 's' || key == 'S') input.isSPressed = true;
     if (key == 'd' || key == 'D') input.isDPressed = true;
+    if (key == 'j' || key == 'J') input.isJPressed = true;
 }
 
 // ve se a tecla foi solto
@@ -134,6 +136,7 @@ void Game::keyboardUp(unsigned char key, int x, int y) {
     if (key == 'a' || key == 'A') input.isAPressed = false;
     if (key == 's' || key == 'S') input.isSPressed = false;
     if (key == 'd' || key == 'D') input.isDPressed = false;
+    if (key == 'j' || key == 'J') input.isJPressed = false;
 }
 
 
@@ -156,9 +159,28 @@ void Game::updatePlayer(){
         teclas.push('D');
     }
 
+    if (!bola.isHeld){
+        float catetoAdj = (bola.x - jogador.x);
+        float catetoOpos = (bola.y - jogador.y);
+        float distance = sqrt(pow(catetoAdj, 2) + pow(catetoOpos, 2));
+
+        if (distance < 0.5){
+            bola.isHeld = true;
+            bola.x = bola.x+0.07;
+            bola.y = bola.y+0.07;
+        }
+    }
+
+    if(input.isJPressed == true ){
+        bola.isHeld = false;
+    }
+
     while(!teclas.empty()){
         char tecla = teclas.top();
         jogador.update(tecla);
+        if(bola.isHeld){
+            bola.update(tecla);
+        }
         teclas.pop();
     }
 

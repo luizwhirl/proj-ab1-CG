@@ -12,14 +12,6 @@ void Jogador::draw() {
     
     glTranslatef(x, y, 0.0f); 
 
-    glColor3f(1.0f, 1.0f, 1.0f);
-    glBegin(GL_QUADS);
-        glVertex2f(-0.1f, -0.1f);
-        glVertex2f( 0.1f, -0.1f);
-        glVertex2f( 0.1f,  0.1f);
-        glVertex2f(-0.1f,  0.1f); 
-    glEnd();
-
     glColor3f(0.0f, 0.0f, 0.0f);
     glBegin(GL_QUADS);
         glVertex2f(-0.2f, -0.2f);
@@ -27,7 +19,6 @@ void Jogador::draw() {
         glVertex2f( 0.2f,  0.2f);
         glVertex2f(-0.2f,  0.2f); 
     glEnd();
-
 
     glPopMatrix();
 }

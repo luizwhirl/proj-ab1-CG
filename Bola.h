@@ -5,6 +5,7 @@ class Bola {
 public:
     float x;
     float y;
+    bool isHeld = false;
 
     // voce vai ver quando minha mae comprar uma bola quadrada
     Bola(); 

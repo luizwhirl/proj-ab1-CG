@@ -11,6 +11,7 @@ public:
     bool isAPressed;
     bool isSPressed;
     bool isDPressed;
+    bool isJPressed;
 
     InputManager();
     
