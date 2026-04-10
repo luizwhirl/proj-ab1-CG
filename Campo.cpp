@@ -108,6 +108,109 @@ void Campo::drawFieldLines() {
     glEnd();
 }
 
+// desenha as traves com um projeçãozinha pra PARECER que é um negocio diferentaooo slkk
+void Campo::drawGoals() {
+    float W = 0.45f; // laargura do gol 
+    float D = 0.4f;  // profundidad da rede no chão
+    float H = 0.5f;  // fator pra ilusão de altura
+
+    glEnable(GL_BLEND); // nisso a gente transforma a rede em transparerent
+
+    // gol dicima
+    // rede de fundo - do fundo no chão (D) até o topo de trás (D + H)
+    glColor4f(0.8f, 0.8f, 0.8f, 0.3f);
+    glBegin(GL_QUADS);
+        glVertex2f(-W, 5.0f + D);
+        glVertex2f( W, 5.0f + D);
+        glVertex2f( W, 5.0f + D + H);
+        glVertex2f(-W, 5.0f + D + H);
+    glEnd();
+
+    // rede do topo - do crossbar frontal (H) até o topo de trás (D + H)
+    glColor4f(0.9f, 0.9f, 0.9f, 0.4f);
+    glBegin(GL_QUADS);
+        glVertex2f(-W, 5.0f + H);
+        glVertex2f( W, 5.0f + H);
+        glVertex2f( W, 5.0f + D + H);
+        glVertex2f(-W, 5.0f + D + H);
+    glEnd();
+
+    // grid da rede
+    glColor4f(1.0f, 1.0f, 1.0f, 0.4f);
+    glLineWidth(1.0f);
+    glBegin(GL_LINES);
+        for (float x = -W; x <= W + 0.01f; x += 0.09f) {
+            glVertex2f(x, 5.0f + D); glVertex2f(x, 5.0f + D + H);
+            glVertex2f(x, 5.0f + H); glVertex2f(x, 5.0f + D + H);
+        }
+        for (float y = 5.0f + D; y <= 5.0f + D + H + 0.01f; y += 0.09f) {
+            glVertex2f(-W, y); glVertex2f(W, y);
+        }
+        for (float y = 5.0f + H; y <= 5.0f + D + H + 0.01f; y += 0.09f) {
+            glVertex2f(-W, y); glVertex2f(W, y);
+        }
+    glEnd();
+
+    // estrutura das trave
+    glColor3f(1.0f, 1.0f, 1.0f);
+    glLineWidth(2.0f);
+    // linhas de chao i di contorno
+    glBegin(GL_LINE_STRIP);
+        glVertex2f(-W, 5.0f); glVertex2f(-W, 5.0f + D); glVertex2f(W, 5.0f + D); glVertex2f(W, 5.0f);
+    glEnd();
+    glBegin(GL_LINES);
+        glVertex2f(-W, 5.0f + D); glVertex2f(-W, 5.0f + D + H);
+        glVertex2f( W, 5.0f + D); glVertex2f( W, 5.0f + D + H);
+    glEnd();
+    // traves principasio
+    glLineWidth(3.0f);
+    glBegin(GL_LINE_STRIP);
+        glVertex2f(-W, 5.0f);      // poste esq base
+        glVertex2f(-W, 5.0f + H);  // poste esq topo
+        glVertex2f( W, 5.0f + H);  // crossbar
+        glVertex2f( W, 5.0f);      // poste dir base
+    glEnd();
+
+
+    // trave dibaxo
+    // a rede é bawsicamente um retangulo simples projetado pra cima da tela
+    glColor4f(0.8f, 0.8f, 0.8f, 0.3f);
+    glBegin(GL_QUADS);
+        glVertex2f(-W, -5.0f);         // base esq
+        glVertex2f( W, -5.0f);         // base dir
+        glVertex2f( W, -5.0f + H);     // =topo dir
+        glVertex2f(-W, -5.0f + H);     // topo esq
+    glEnd();
+
+    //  rede - basicamente um grid d quadrados retos
+    glColor4f(1.0f, 1.0f, 1.0f, 0.5f);
+    glLineWidth(1.0f);
+    glBegin(GL_LINES);
+        // linhas verticais
+        for (float x = -W; x <= W + 0.01f; x += 0.09f) {
+            glVertex2f(x, -5.0f);
+            glVertex2f(x, -5.0f + H);
+        }
+        // linhas horizontais
+        for (float y = -5.0f; y <= -5.0f + H + 0.01f; y += 0.09f) {
+            glVertex2f(-W, y);
+            glVertex2f( W, y);
+        }
+    glEnd();
+    
+    // as traves brancas 
+    glColor3f(1.0f, 1.0f, 1.0f);
+    glLineWidth(3.0f); 
+    glBegin(GL_LINE_STRIP);
+        glVertex2f(-W, -5.0f);      // poste esq 
+        glVertex2f(-W, -5.0f + H);  // poste esq 
+        glVertex2f( W, -5.0f + H);  // crossbar 
+        glVertex2f( W, -5.0f);      // poste dir 
+    glEnd();
+
+    glLineWidth(1.0f); 
+}
+
 void Campo::draw() {
     glEnable(GL_TEXTURE_2D);
     glBindTexture(GL_TEXTURE_2D, grassTexture);
@@ -148,4 +251,7 @@ void Campo::draw() {
     glDisable(GL_TEXTURE_2D);
 
     drawFieldLines();
+
+    // os gol ssao desenhados por cima de tudo no campo
+    drawGoals();
 }

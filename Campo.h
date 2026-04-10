@@ -11,6 +11,10 @@ private:
     void drawCircle(float cx, float cy, float r, int num_segments);
     void drawFieldLines();
 
+    // metodos para desenhar os placeholders e as traves
+    void drawArquibancadas();
+    void drawGoals();
+
 public:
     Campo();
     
