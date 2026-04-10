@@ -54,6 +54,65 @@ O sistema de zoom é a feature mais complexa matematicamente. Ele permite clicar
 * **Lógica da Câmera (glOrtho):** No método `Game::setupCamera()`, se a flag `isZoomed` do `InputManager` for verdadeira, a câmera recalcula os limites `left`, `right`, `bottom`, e `top`. Ela pega as coordenadas de mundo salvas no passo anterior, calcula um campo de visão reduzido (fator de 0.35f, ou seja, 35% do tamanho original) e centraliza a projeção de exibição ao redor da coordenada exata onde o mouse estava mirando.
 
 ---
+## 4. E os .png? 
+
+Para carregar arquivos de imagem e transformá-los em texturas no OpenGL sem depender de bibliotecas pesadas e difíceis de configurar, nós estamos usando o [stb_image.h](https://github.com/nothings/stb). Essa biblioteca é de público, muito leve e prática.
+
+Exemplo no nosso código:
+
+### 1. Inclusão e Implementação
+O `stb_image` precisa ser "instanciado" em apenas **um** arquivo `.cpp` do projeto. E a gente faz isso definindo a macro `STB_IMAGE_IMPLEMENTATION` antes do include. Isso vai  instruir o compilador a transformar o header em código-fonte executável naquele exato local.
+
+```cpp
+// Transforma o header em um arquivo .cpp com a implementação
+// IMPORTANTE: Só declare isso em UM arquivo fonte do seu projeto!
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h" 
+```
+
+### 2. Passando a imagem da RAM para a VRAM (placa de vidro)
+
+A resenha aqui tá no método `loadArquibancadaTexture`. Já que o fluxo envolve ler a imagem do disco, converter as coordendas (que pra tu que não sabe, o openGL lê diferente o eixo Y), transferir os pixels para a VRAM e liberar a memória da RAM pra gente evitar memory leak (porque aparentemente isso pode MESMO acontecer).
+
+```cpp
+void Campo::loadArquibancadaTexture(const char* filepath) {
+    // Gera a textura e faz o bind dela no openGL
+    glGenTextures(1, &arquibancadaTexture);
+    glBindTexture(GL_TEXTURE_2D, arquibancadaTexture);
+
+    // [...]
+
+    int width, height, nrChannels;
+    
+    // DEtALHE DOIDO:
+    // as imagens normais (png, jpg, dbz, etc) têm a origem (0,0) no canto SUPERIOR esquerdo
+    // mas aparentemente o ppenGL espera que o pixel (0,0) seja no canto INFERIOR esquerdo
+    // entao essa funçãozinha inverte a imagem verticalmente na hora do carregamento para corrigir isso
+    stbi_set_flip_vertically_on_load(true); 
+    
+    // Lê o arquivo do disco para a memória ram
+    // o stb_load preenche a largura, altura e o número de canais (nrChannels)
+    unsigned char *data = stbi_load(filepath, &width, &height, &nrChannels, 0);
+    
+    if (data) { 
+        // isso aqu descobre dinamicamente se a imagem tem canal Alpha (pra transparência)
+        GLenum format = (nrChannels == 4) ? GL_RGBA : GL_RGB;
+        
+        // envia os pixels da memória ram para a memória de vídeo
+        glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
+        
+        // limpa a memória ram
+        // como o openGL já tem uma cópia da imagem lá na gpu, a gente já não precisamos mais 
+        // segurar esses dados aqui. 
+        // esse bagulhete aqui embaixo evita o memory leak
+        stbi_image_free(data); // <<<< esse. É bom tu botar ai  
+        
+    } else {
+        std::cerr << "Falha ao carregar a textura: " << filepath << std::endl;
+    }
+}
+```
+---
 
 ## Compilação (Exemplo com GCC/MinGW no Windows)
 
