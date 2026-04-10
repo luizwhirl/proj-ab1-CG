@@ -1,11 +1,16 @@
 #include "Campo.h"
 #include <cmath>
 #include <cstdlib>
+#include <iostream>
+
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
 
 constexpr float PI = 3.14159265358979323846f;
 
 Campo::Campo() {
     grassTexture = 0;
+    arquibancadaTexture = 0;
 }
 
 void Campo::createGrassTexture() {
@@ -41,6 +46,62 @@ void Campo::createGrassTexture() {
     // rete a a rexteura ao longo do campo
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+}
+
+void Campo::loadArquibancadaTexture(const char* filepath) {
+    glGenTextures(1, &arquibancadaTexture);
+    glBindTexture(GL_TEXTURE_2D, arquibancadaTexture);
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    // oia que legal tem ate função de virar
+    int width, height, nrChannels;
+    stbi_set_flip_vertically_on_load(true); 
+    
+    unsigned char *data = stbi_load(filepath, &width, &height, &nrChannels, 0);
+    if (data) {
+        GLenum format = (nrChannels == 4) ? GL_RGBA : GL_RGB;
+        glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
+        stbi_image_free(data);
+    } else {
+        std::cerr << "Falha ao carregar a textura da arquibancada: " << filepath << std::endl;
+    }
+}
+
+void Campo::drawArquibancada() {
+    glEnable(GL_TEXTURE_2D);
+    glBindTexture(GL_TEXTURE_2D, arquibancadaTexture);
+    glColor3f(1.0f, 1.0f, 1.0f);
+
+    float largura = 3.5f;
+    float alturaProporcional = 2.33f;
+
+    // arquibankada norte 
+    float baseNorte = 5.5f;
+    float topoNorte = baseNorte + alturaProporcional;
+    
+    glBegin(GL_QUADS);
+        glTexCoord2f(0.0f, 0.0f); glVertex2f(-largura, baseNorte);
+        glTexCoord2f(1.0f, 0.0f); glVertex2f( largura, baseNorte);
+        glTexCoord2f(1.0f, 1.0f); glVertex2f( largura, topoNorte);
+        glTexCoord2f(0.0f, 1.0f); glVertex2f(-largura, topoNorte);
+    glEnd();
+
+    // arkibankada sulll
+    float baseSul = -5.5f;
+    float topoSul = baseSul - alturaProporcional;
+
+    glBegin(GL_QUADS);
+        glTexCoord2f(0.0f, 1.0f); glVertex2f(-largura, topoSul);
+        glTexCoord2f(1.0f, 1.0f); glVertex2f( largura, topoSul);
+        glTexCoord2f(1.0f, 0.0f); glVertex2f( largura, baseSul);
+        glTexCoord2f(0.0f, 0.0f); glVertex2f(-largura, baseSul);
+    glEnd();
+
+    glDisable(GL_TEXTURE_2D);
 }
 
 void Campo::drawCircle(float cx, float cy, float r, int num_segments) {
@@ -108,6 +169,117 @@ void Campo::drawFieldLines() {
     glEnd();
 }
 
+// desenha as traves com um projeçãozinha pra PARECER que é um negocio diferentaooo slkk
+void Campo::drawGoals() {
+    float W = 0.45f; // laargura do gol 
+    
+    // variaveis pro gol norte
+    float Dn = 0.25f;  // profundidad da rede no chão
+    float Hn = 0.25f;  // fator pra ilusão de altura
+
+    // variaveis pro gol sul (retornados ao original)
+    float Ds = 0.4f;
+    float Hs = 0.5f;
+
+    glEnable(GL_BLEND); // nisso a gente transforma a rede em transparerent
+
+    // gol dicima
+    // rede de fundo - do fundo no chão (Dn) até o topo de trás (Dn + Hn)
+    glColor4f(0.8f, 0.8f, 0.8f, 0.3f);
+    glBegin(GL_QUADS);
+        glVertex2f(-W, 5.0f + Dn);
+        glVertex2f( W, 5.0f + Dn);
+        glVertex2f( W, 5.0f + Dn + Hn);
+        glVertex2f(-W, 5.0f + Dn + Hn);
+    glEnd();
+
+    // rede do topo - do crossbar frontal (Hn) até o topo de trás (Dn + Hn)
+    glColor4f(0.9f, 0.9f, 0.9f, 0.4f);
+    glBegin(GL_QUADS);
+        glVertex2f(-W, 5.0f + Hn);
+        glVertex2f( W, 5.0f + Hn);
+        glVertex2f( W, 5.0f + Dn + Hn);
+        glVertex2f(-W, 5.0f + Dn + Hn);
+    glEnd();
+
+    // grid da rede
+    glColor4f(1.0f, 1.0f, 1.0f, 0.4f);
+    glLineWidth(1.0f);
+    glBegin(GL_LINES);
+        for (float x = -W; x <= W + 0.01f; x += 0.09f) {
+            glVertex2f(x, 5.0f + Dn); glVertex2f(x, 5.0f + Dn + Hn);
+            glVertex2f(x, 5.0f + Hn); glVertex2f(x, 5.0f + Dn + Hn);
+        }
+        for (float y = 5.0f + Dn; y <= 5.0f + Dn + Hn + 0.01f; y += 0.09f) {
+            glVertex2f(-W, y); glVertex2f(W, y);
+        }
+        for (float y = 5.0f + Hn; y <= 5.0f + Dn + Hn + 0.01f; y += 0.09f) {
+            glVertex2f(-W, y); glVertex2f(W, y);
+        }
+    glEnd();
+
+    // estrutura das trave
+    glColor3f(1.0f, 1.0f, 1.0f);
+    glLineWidth(2.0f);
+    // linhas de chao i di contorno
+    glBegin(GL_LINE_STRIP);
+        glVertex2f(-W, 5.0f); glVertex2f(-W, 5.0f + Dn); glVertex2f(W, 5.0f + Dn); glVertex2f(W, 5.0f);
+    glEnd();
+    glBegin(GL_LINES);
+        glVertex2f(-W, 5.0f + Dn); glVertex2f(-W, 5.0f + Dn + Hn);
+        glVertex2f( W, 5.0f + Dn); glVertex2f( W, 5.0f + Dn + Hn);
+    glEnd();
+    // traves principasio
+    glLineWidth(3.0f);
+    glBegin(GL_LINE_STRIP);
+        glVertex2f(-W, 5.0f);      // poste esq base
+        glVertex2f(-W, 5.0f + Hn); // poste esq topo
+        glVertex2f( W, 5.0f + Hn); // crossbar
+        glVertex2f( W, 5.0f);      // poste dir base
+    glEnd();
+
+
+    float baseSul = -5.0f - Ds; 
+    float topoSul = baseSul + Hs; 
+
+    // a rede é bawsicamente um retangulo simples projetado pra cima da tela
+    glColor4f(0.8f, 0.8f, 0.8f, 0.3f);
+    glBegin(GL_QUADS);
+        glVertex2f(-W, baseSul);       // base esq
+        glVertex2f( W, baseSul);       // base dir
+        glVertex2f( W, topoSul);       // topo dir
+        glVertex2f(-W, topoSul);       // topo esq
+    glEnd();
+
+    //  rede - basicamente um grid d quadrados retos
+    glColor4f(1.0f, 1.0f, 1.0f, 0.5f);
+    glLineWidth(1.0f);
+    glBegin(GL_LINES);
+        // linhas verticais
+        for (float x = -W; x <= W + 0.01f; x += 0.09f) {
+            glVertex2f(x, baseSul);
+            glVertex2f(x, topoSul);
+        }
+        // linhas horizontais
+        for (float y = baseSul; y <= topoSul + 0.01f; y += 0.09f) {
+            glVertex2f(-W, y);
+            glVertex2f( W, y);
+        }
+    glEnd();
+    
+    // as traves brancas 
+    glColor3f(1.0f, 1.0f, 1.0f);
+    glLineWidth(3.0f); 
+    glBegin(GL_LINE_STRIP);
+        glVertex2f(-W, baseSul);      // poste esq 
+        glVertex2f(-W, topoSul);      // poste esq topo
+        glVertex2f( W, topoSul);      // crossbar 
+        glVertex2f( W, baseSul);      // poste dir 
+    glEnd();
+
+    glLineWidth(1.0f); 
+}
+
 void Campo::draw() {
     glEnable(GL_TEXTURE_2D);
     glBindTexture(GL_TEXTURE_2D, grassTexture);
@@ -148,4 +320,93 @@ void Campo::draw() {
     glDisable(GL_TEXTURE_2D);
 
     drawFieldLines();
+
+    // Desenhando a arquibancada por baixo
+    drawArquibancada();
+
+    // os gol ssao desenhados por cima de tudo no campo
+    drawGoals();
+}
+
+// metodo - checar colisao com as paredes/traves da rede
+void Campo::tratarColisaoGol(float& bolaX, float& bolaY, float& velX, float& velY, float raio) {
+    float W = 0.45f; // largura do gol
+    
+    // separamos a profundidade pro norte e pro sul para a fisica bater certinho com o visual
+    float Dn = 0.25f;  // profundidade do gol norte
+    float Ds = 0.4f;   // profundidade do gol sul
+
+    // gol di cima
+    // checa se a bola chegou perto da linha do gol do norte ou entrou
+    if (bolaY + raio > 5.0f && bolaX > -W - raio && bolaX < W + raio) {
+        
+        // coolisão com a rede do fundo
+        if (bolaY + raio > 5.0f + Dn) {
+            bolaY = 5.0f + Dn - raio;
+            velY = -velY; // inverte a velocidade para quicar
+        }
+        
+        // cooolisão com a rede lateral esquerda - pelo lado de drentro
+        if (bolaX - raio < -W && bolaY > 5.0f) {
+            bolaX = -W + raio;
+            velX = -velX;
+        }
+        
+        // coolisão com a rede lateral direita - pelo lado de derntro
+        if (bolaX + raio > W && bolaY > 5.0f) {
+            bolaX = W - raio;
+            velX = -velX;
+        }
+        
+        // colisão da bola -por fora ou por dentro- exatamente nas traves laterais 
+        // trv esqrd em (-W, 5.0)
+        float distEsq = std::sqrt(std::pow(bolaX - (-W), 2) + std::pow(bolaY - 5.0f, 2));
+        if (distEsq < raio) {
+            velX = -velX; 
+            velY = -velY; 
+        }
+        // trv drt em (W, 5.0)
+        float distDir = std::sqrt(std::pow(bolaX - W, 2) + std::pow(bolaY - 5.0f, 2));
+        if (distDir < raio) {
+            velX = -velX;
+            velY = -velY;
+        }
+    }
+    
+    // gol dibaxo
+    // if a bola chegou perto da linha do gol do sul ou entrou
+    if (bolaY - raio < -5.0f && bolaX > -W - raio && bolaX < W + raio) {
+        
+        // coolisão com a rede do fundo
+        if (bolaY - raio < -5.0f - Ds) {
+            bolaY = -5.0f - Ds + raio;
+            velY = -velY; // inverte a velocidade para quicar tbmmmm ebaa
+        }
+        
+        // coolisão com a rede lateral esquerda - por dento  tambem
+        if (bolaX - raio < -W && bolaY < -5.0f) {
+            bolaX = -W + raio;
+            velX = -velX;
+        }
+        
+        // clisao com a rede lateral direita - é dento
+        if (bolaX + raio > W && bolaY < -5.0f) {
+            bolaX = W - raio;
+            velX = -velX;
+        }
+        
+        // colisão pontual com os postes do sul
+        // trv esqrd em (-W, -5.0)
+        float distEsq = std::sqrt(std::pow(bolaX - (-W), 2) + std::pow(bolaY - (-5.0f), 2));
+        if (distEsq < raio) {
+            velX = -velX;
+            velY = -velY;
+        }
+        // trv dirt em (W, -5.0)
+        float distDir = std::sqrt(std::pow(bolaX - W, 2) + std::pow(bolaY - (-5.0f), 2));
+        if (distDir < raio) {
+            velX = -velX;
+            velY = -velY;
+        }
+    }
 }
