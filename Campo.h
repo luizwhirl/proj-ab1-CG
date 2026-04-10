@@ -7,18 +7,21 @@ class Campo {
 private:
     // variavel do id da grama random
     GLuint grassTexture;
+    GLuint arquibancadaTexture;
 
     void drawCircle(float cx, float cy, float r, int num_segments);
     void drawFieldLines();
 
     // metodos para desenhar os placeholders e as traves
     void drawGoals();
+    void drawArquibancada();
 
 public:
     Campo();
     
     // gerar nossa graminha randomizada
     void createGrassTexture();
+    void loadArquibancadaTexture(const char* filepath);
     void draw();
 
     // metodo para tratar a colisao da bola com os gols

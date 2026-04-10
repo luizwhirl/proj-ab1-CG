@@ -28,6 +28,9 @@ void Game::init() {
     srand(static_cast<unsigned int>(time(NULL)));
     
     campo.createGrassTexture();
+
+    // carreguemos as texturas aquiiis
+    campo.loadArquibancadaTexture("assets/sprites/arquibancadaA.png");
 }
 
 void Game::setupCamera() {

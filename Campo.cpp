@@ -1,11 +1,16 @@
 #include "Campo.h"
 #include <cmath>
 #include <cstdlib>
+#include <iostream>
+
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
 
 constexpr float PI = 3.14159265358979323846f;
 
 Campo::Campo() {
     grassTexture = 0;
+    arquibancadaTexture = 0;
 }
 
 void Campo::createGrassTexture() {
@@ -41,6 +46,62 @@ void Campo::createGrassTexture() {
     // rete a a rexteura ao longo do campo
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+}
+
+void Campo::loadArquibancadaTexture(const char* filepath) {
+    glGenTextures(1, &arquibancadaTexture);
+    glBindTexture(GL_TEXTURE_2D, arquibancadaTexture);
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    // oia que legal tem ate função de virar
+    int width, height, nrChannels;
+    stbi_set_flip_vertically_on_load(true); 
+    
+    unsigned char *data = stbi_load(filepath, &width, &height, &nrChannels, 0);
+    if (data) {
+        GLenum format = (nrChannels == 4) ? GL_RGBA : GL_RGB;
+        glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
+        stbi_image_free(data);
+    } else {
+        std::cerr << "Falha ao carregar a textura da arquibancada: " << filepath << std::endl;
+    }
+}
+
+void Campo::drawArquibancada() {
+    glEnable(GL_TEXTURE_2D);
+    glBindTexture(GL_TEXTURE_2D, arquibancadaTexture);
+    glColor3f(1.0f, 1.0f, 1.0f);
+
+    float largura = 3.5f;
+    float alturaProporcional = 2.33f;
+
+    // arquibankada norte 
+    float baseNorte = 5.5f;
+    float topoNorte = baseNorte + alturaProporcional;
+    
+    glBegin(GL_QUADS);
+        glTexCoord2f(0.0f, 0.0f); glVertex2f(-largura, baseNorte);
+        glTexCoord2f(1.0f, 0.0f); glVertex2f( largura, baseNorte);
+        glTexCoord2f(1.0f, 1.0f); glVertex2f( largura, topoNorte);
+        glTexCoord2f(0.0f, 1.0f); glVertex2f(-largura, topoNorte);
+    glEnd();
+
+    // arkibankada sulll
+    float baseSul = -5.5f;
+    float topoSul = baseSul - alturaProporcional;
+
+    glBegin(GL_QUADS);
+        glTexCoord2f(0.0f, 1.0f); glVertex2f(-largura, topoSul);
+        glTexCoord2f(1.0f, 1.0f); glVertex2f( largura, topoSul);
+        glTexCoord2f(1.0f, 0.0f); glVertex2f( largura, baseSul);
+        glTexCoord2f(0.0f, 0.0f); glVertex2f(-largura, baseSul);
+    glEnd();
+
+    glDisable(GL_TEXTURE_2D);
 }
 
 void Campo::drawCircle(float cx, float cy, float r, int num_segments) {
@@ -260,11 +321,8 @@ void Campo::draw() {
 
     drawFieldLines();
 
-    // eai luca s num sei o que  
-    // seguinte, mais tarde a gente quando for dar merge
-    // vamo ajusar o código pra desenhar a bola aqui
-    // ah mas por quê? 
-    // meia noite eu te conto
+    // Desenhando a arquibancada por baixo
+    drawArquibancada();
 
     // os gol ssao desenhados por cima de tudo no campo
     drawGoals();
