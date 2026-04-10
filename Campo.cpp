@@ -90,6 +90,59 @@ void Campo::drawArquibancada() {
         glTexCoord2f(0.0f, 1.0f); glVertex2f(-largura, topoNorte);
     glEnd();
 
+    // os neguinho tao pulando so na norte
+    glDisable(GL_TEXTURE_2D); // textura desativada
+
+    float tempo = glutGet(GLUT_ELAPSED_TIME) / 1000.0f; 
+    float tam = 0.06f; // tamanh do kwadrado 
+
+    int numFileiras = 2;
+    int numQuadradinhos = 8;
+
+    // ajusta o X e Y inicial e final para garantir que fiquem estritamente "dentro" do concreto
+    // o x original vai de -3.5 a 3.5
+    //  O Y original vai de 5.5 a 7.83
+    float startX = -2.8f; 
+    float endX = 2.8f;    
+    float startY = 6.66f; // fileira Y do di cima
+    float endY = 7.0f;   // fileira Y do di cima
+
+    glBegin(GL_QUADS);
+    for (int row = 0; row < numFileiras; ++row) {
+        for (int col = 0; col < numQuadradinhos; ++col) {
+            
+            // interpola linearmente a posição de acordo com a coluna e fileira
+            float x = startX + col * ((endX - startX) / (numQuadradinhos - 1));
+            float y = startY + row * ((endY - startY) / (numFileiras - 1));
+            
+            float offset = x * 3.5f + y * 2.5f; 
+            
+            // pulo suave de 
+            float pulo = (std::sin(tempo * 16.0f + offset) + 1.0f) * 0.5f * 0.12f; 
+
+            // random cores 
+            float corMix = std::sin(x * 12.0f + y * 8.0f);
+            if (corMix > 0.5f) glColor3f(0.9f, 0.1f, 0.1f);
+            else if (corMix > -0.5f) glColor3f(1.0f, 1.0f, 1.0f);
+            else glColor3f(0.1f, 0.1f, 0.1f);
+
+            float qX = x;
+            float qY = y + pulo;
+
+            // quadradis
+            glVertex2f(qX - tam, qY - tam);
+            glVertex2f(qX + tam, qY - tam);
+            glVertex2f(qX + tam, qY + tam);
+            glVertex2f(qX - tam, qY + tam);
+        }
+    }
+    glEnd();
+
+    // reativa a textura para o resto do campo funcionar normal
+    glEnable(GL_TEXTURE_2D);
+    glBindTexture(GL_TEXTURE_2D, arquibancadaTexture);
+    glColor3f(1.0f, 1.0f, 1.0f);
+
     // arkibankada sulll
     float baseSul = -5.5f;
     float topoSul = baseSul - alturaProporcional;
