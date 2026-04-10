@@ -128,6 +128,7 @@ void Game::keyboardClick(unsigned char key, int x, int y) {
     if (key == 's' || key == 'S') input.isSPressed = true;
     if (key == 'd' || key == 'D') input.isDPressed = true;
     if (key == 'j' || key == 'J') input.isJPressed = true;
+    if (key == 'k' || key == 'K') input.isKPressed = true;
 }
 
 // ve se a tecla foi solto
@@ -137,6 +138,7 @@ void Game::keyboardUp(unsigned char key, int x, int y) {
     if (key == 's' || key == 'S') input.isSPressed = false;
     if (key == 'd' || key == 'D') input.isDPressed = false;
     if (key == 'j' || key == 'J') input.isJPressed = false;
+    if (key == 'k' || key == 'K') input.isKPressed = false;
 }
 
 
@@ -159,6 +161,11 @@ void Game::updatePlayer(){
         teclas.push('D');
     }
 
+    if(input.isKPressed == true ){
+        bola.y+=0.04f;
+        bola.isHeld = false;
+    }
+
     if (!bola.isHeld){
         float catetoAdj = (bola.x - jogador.x);
         float catetoOpos = (bola.y - jogador.y);
@@ -166,8 +173,8 @@ void Game::updatePlayer(){
 
         if (distance < 0.5){
             bola.isHeld = true;
-            bola.x = bola.x+0.07;
-            bola.y = bola.y+0.07;
+            bola.x = bola.x+0.05;
+            bola.y = bola.y+0.05;
         }
     }
 
