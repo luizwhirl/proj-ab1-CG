@@ -76,11 +76,14 @@ void Game::display() {
 
     campo.draw();
 
-    scoreboard.draw(winW, winH);
-
+    // jogador e bola vêm primeiro
     jogador.draw();
-
     bola.draw();
+
+    // os gols sao desenhados POR ÚLTIMO pra rede e o topo aparecerem ACIMA deles visualmente
+    gol.draw();
+
+    scoreboard.draw(winW, winH);
 
     // butaos de teste
     scoreboard.drawTestButtons(winW, winH);
@@ -184,7 +187,16 @@ void Game::updatePlayer(){
         teclas.pop();
     }
 
-      glutPostRedisplay();
+    // Resolvendo as colisões DEPOIS do update de teclas
+    // Primeiro os limites do campo para não deixar ngm sair
+    campo.resolverColisaoLimites(jogador.x, jogador.y, 0.2f);
+    campo.resolverColisaoLimites(bola.x, bola.y, 0.1f);
+
+    // Em seguida resolve os gols por último
+    gol.resolverColisao(jogador.x, jogador.y, 0.2f);
+    gol.resolverColisao(bola.x, bola.y, 0.1f);
+
+    glutPostRedisplay();
 }
 
 

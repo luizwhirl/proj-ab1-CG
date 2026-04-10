@@ -2,10 +2,11 @@
 #define GAME_H
 
 #include "Campo.h"
+#include "Gol.h"
 #include "Scoreboard.h"
 #include "InputManager.h"
 #include "Bola.h"
-#include "jogador.h"
+#include "Jogador.h"
 
 // Scene / Game State e Window / Context Manager
 class Game {
@@ -13,6 +14,7 @@ private:
     int winW, winH;
     
     Campo campo;
+    Gol gol;
     Scoreboard scoreboard;
     InputManager input;
     Bola bola;
