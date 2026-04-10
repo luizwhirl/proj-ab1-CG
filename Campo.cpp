@@ -111,28 +111,34 @@ void Campo::drawFieldLines() {
 // desenha as traves com um projeçãozinha pra PARECER que é um negocio diferentaooo slkk
 void Campo::drawGoals() {
     float W = 0.45f; // laargura do gol 
-    float D = 0.4f;  // profundidad da rede no chão
-    float H = 0.5f;  // fator pra ilusão de altura
+    
+    // variaveis pro gol norte
+    float Dn = 0.25f;  // profundidad da rede no chão
+    float Hn = 0.25f;  // fator pra ilusão de altura
+
+    // variaveis pro gol sul (retornados ao original)
+    float Ds = 0.4f;
+    float Hs = 0.5f;
 
     glEnable(GL_BLEND); // nisso a gente transforma a rede em transparerent
 
     // gol dicima
-    // rede de fundo - do fundo no chão (D) até o topo de trás (D + H)
+    // rede de fundo - do fundo no chão (Dn) até o topo de trás (Dn + Hn)
     glColor4f(0.8f, 0.8f, 0.8f, 0.3f);
     glBegin(GL_QUADS);
-        glVertex2f(-W, 5.0f + D);
-        glVertex2f( W, 5.0f + D);
-        glVertex2f( W, 5.0f + D + H);
-        glVertex2f(-W, 5.0f + D + H);
+        glVertex2f(-W, 5.0f + Dn);
+        glVertex2f( W, 5.0f + Dn);
+        glVertex2f( W, 5.0f + Dn + Hn);
+        glVertex2f(-W, 5.0f + Dn + Hn);
     glEnd();
 
-    // rede do topo - do crossbar frontal (H) até o topo de trás (D + H)
+    // rede do topo - do crossbar frontal (Hn) até o topo de trás (Dn + Hn)
     glColor4f(0.9f, 0.9f, 0.9f, 0.4f);
     glBegin(GL_QUADS);
-        glVertex2f(-W, 5.0f + H);
-        glVertex2f( W, 5.0f + H);
-        glVertex2f( W, 5.0f + D + H);
-        glVertex2f(-W, 5.0f + D + H);
+        glVertex2f(-W, 5.0f + Hn);
+        glVertex2f( W, 5.0f + Hn);
+        glVertex2f( W, 5.0f + Dn + Hn);
+        glVertex2f(-W, 5.0f + Dn + Hn);
     glEnd();
 
     // grid da rede
@@ -140,13 +146,13 @@ void Campo::drawGoals() {
     glLineWidth(1.0f);
     glBegin(GL_LINES);
         for (float x = -W; x <= W + 0.01f; x += 0.09f) {
-            glVertex2f(x, 5.0f + D); glVertex2f(x, 5.0f + D + H);
-            glVertex2f(x, 5.0f + H); glVertex2f(x, 5.0f + D + H);
+            glVertex2f(x, 5.0f + Dn); glVertex2f(x, 5.0f + Dn + Hn);
+            glVertex2f(x, 5.0f + Hn); glVertex2f(x, 5.0f + Dn + Hn);
         }
-        for (float y = 5.0f + D; y <= 5.0f + D + H + 0.01f; y += 0.09f) {
+        for (float y = 5.0f + Dn; y <= 5.0f + Dn + Hn + 0.01f; y += 0.09f) {
             glVertex2f(-W, y); glVertex2f(W, y);
         }
-        for (float y = 5.0f + H; y <= 5.0f + D + H + 0.01f; y += 0.09f) {
+        for (float y = 5.0f + Hn; y <= 5.0f + Dn + Hn + 0.01f; y += 0.09f) {
             glVertex2f(-W, y); glVertex2f(W, y);
         }
     glEnd();
@@ -156,24 +162,24 @@ void Campo::drawGoals() {
     glLineWidth(2.0f);
     // linhas de chao i di contorno
     glBegin(GL_LINE_STRIP);
-        glVertex2f(-W, 5.0f); glVertex2f(-W, 5.0f + D); glVertex2f(W, 5.0f + D); glVertex2f(W, 5.0f);
+        glVertex2f(-W, 5.0f); glVertex2f(-W, 5.0f + Dn); glVertex2f(W, 5.0f + Dn); glVertex2f(W, 5.0f);
     glEnd();
     glBegin(GL_LINES);
-        glVertex2f(-W, 5.0f + D); glVertex2f(-W, 5.0f + D + H);
-        glVertex2f( W, 5.0f + D); glVertex2f( W, 5.0f + D + H);
+        glVertex2f(-W, 5.0f + Dn); glVertex2f(-W, 5.0f + Dn + Hn);
+        glVertex2f( W, 5.0f + Dn); glVertex2f( W, 5.0f + Dn + Hn);
     glEnd();
     // traves principasio
     glLineWidth(3.0f);
     glBegin(GL_LINE_STRIP);
         glVertex2f(-W, 5.0f);      // poste esq base
-        glVertex2f(-W, 5.0f + H);  // poste esq topo
-        glVertex2f( W, 5.0f + H);  // crossbar
+        glVertex2f(-W, 5.0f + Hn); // poste esq topo
+        glVertex2f( W, 5.0f + Hn); // crossbar
         glVertex2f( W, 5.0f);      // poste dir base
     glEnd();
 
 
-    float baseSul = -5.0f - D; 
-    float topoSul = baseSul + H; 
+    float baseSul = -5.0f - Ds; 
+    float topoSul = baseSul + Hs; 
 
     // a rede é bawsicamente um retangulo simples projetado pra cima da tela
     glColor4f(0.8f, 0.8f, 0.8f, 0.3f);
@@ -267,15 +273,18 @@ void Campo::draw() {
 // metodo - checar colisao com as paredes/traves da rede
 void Campo::tratarColisaoGol(float& bolaX, float& bolaY, float& velX, float& velY, float raio) {
     float W = 0.45f; // largura do gol
-    float D = 0.4f;  // profundidade do gol
+    
+    // separamos a profundidade pro norte e pro sul para a fisica bater certinho com o visual
+    float Dn = 0.25f;  // profundidade do gol norte
+    float Ds = 0.4f;   // profundidade do gol sul
 
     // gol di cima
     // checa se a bola chegou perto da linha do gol do norte ou entrou
     if (bolaY + raio > 5.0f && bolaX > -W - raio && bolaX < W + raio) {
         
         // coolisão com a rede do fundo
-        if (bolaY + raio > 5.0f + D) {
-            bolaY = 5.0f + D - raio;
+        if (bolaY + raio > 5.0f + Dn) {
+            bolaY = 5.0f + Dn - raio;
             velY = -velY; // inverte a velocidade para quicar
         }
         
@@ -311,8 +320,8 @@ void Campo::tratarColisaoGol(float& bolaX, float& bolaY, float& velX, float& vel
     if (bolaY - raio < -5.0f && bolaX > -W - raio && bolaX < W + raio) {
         
         // coolisão com a rede do fundo
-        if (bolaY - raio < -5.0f - D) {
-            bolaY = -5.0f - D + raio;
+        if (bolaY - raio < -5.0f - Ds) {
+            bolaY = -5.0f - Ds + raio;
             velY = -velY; // inverte a velocidade para quicar tbmmmm ebaa
         }
         
