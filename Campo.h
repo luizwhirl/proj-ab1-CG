@@ -9,6 +9,7 @@ private:
     GLuint grassTexture;
     GLuint arquibancadaTexture;
     GLuint arquibancadaTextureB;
+    GLuint arquibancadaTextureC; 
 
     void drawCircle(float cx, float cy, float r, int num_segments);
     void drawFieldLines();
@@ -23,7 +24,7 @@ public:
     void createGrassTexture();
     
     // carregar as arquibancadas
-    void loadArquibancadaTextures(const char* filepathA, const char* filepathB); 
+    void loadArquibancadaTextures(const char* filepathA, const char* filepathB, const char* filepathC); 
     void draw();
 
     // metodo para barrar a saida do gramado

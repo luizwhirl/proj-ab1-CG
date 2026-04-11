@@ -33,8 +33,8 @@ void Game::init() {
     campo.createGrassTexture();
 
     // carreguemos as texturas aquiiis
-    // passano os caminhos das bichas 
-    campo.loadArquibancadaTextures("assets/sprites/arquibancadaA.png", "assets/sprites/arquibancadaB.png");
+    // passano os caminhos das bichas
+    campo.loadArquibancadaTextures("assets/sprites/arquibancadaA.png", "assets/sprites/ArquibancadaB.png", "assets/sprites/ArquibancadaC.png");
 }
 
 void Game::setupCamera() {

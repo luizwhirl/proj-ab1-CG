@@ -12,6 +12,7 @@ Campo::Campo() {
     grassTexture = 0;
     arquibancadaTexture = 0;
     arquibancadaTextureB = 0;
+    arquibancadaTextureC = 0;
 }
 
 void Campo::createGrassTexture() {
@@ -49,8 +50,8 @@ void Campo::createGrassTexture() {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 }
 
-// função para carregar as texturas das arquibancadas norte e sul
-void Campo::loadArquibancadaTextures(const char* filepathA, const char* filepathB) {
+// função para carregar as texturas das arquibancadas ´prra nao aguento mais tpdo dia mudando esse comentario
+void Campo::loadArquibancadaTextures(const char* filepathA, const char* filepathB, const char* filepathC) {
     // arkibankada norte
     glGenTextures(1, &arquibancadaTexture);
     glBindTexture(GL_TEXTURE_2D, arquibancadaTexture);
@@ -89,6 +90,24 @@ void Campo::loadArquibancadaTextures(const char* filepathA, const char* filepath
         stbi_image_free(dataB);
     } else {
         std::cerr << "Falha ao carregar a textura da arquibancada B: " << filepathB << std::endl;
+    }
+
+    // carregada textura da arquibancada leste
+    glGenTextures(1, &arquibancadaTextureC);
+    glBindTexture(GL_TEXTURE_2D, arquibancadaTextureC);
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    unsigned char *dataC = stbi_load(filepathC, &width, &height, &nrChannels, 0);
+    if (dataC) {
+        GLenum format = (nrChannels == 4) ? GL_RGBA : GL_RGB;
+        glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, dataC);
+        stbi_image_free(dataC);
+    } else {
+        std::cerr << "Falha ao carregar a textura da arquibancada C: " << filepathC << std::endl;
     }
 }
 
@@ -176,6 +195,24 @@ void Campo::drawArquibancada() {
         glTexCoord2f(1.0f, 0.0f); glVertex2f( largura, topoSul);
         glTexCoord2f(1.0f, 1.0f); glVertex2f( largura, baseSul);
         glTexCoord2f(0.0f, 1.0f); glVertex2f(-largura, baseSul);
+    glEnd();
+
+    // link da arkibankada lestee
+    glBindTexture(GL_TEXTURE_2D, arquibancadaTextureC);
+    glColor3f(1.0f, 1.0f, 1.0f);
+
+    // arkibankada leste conectando o topo da norte e o topo da sul exatamente
+    float xInternoLeste = largura; // 3.5f
+    float xExternoLeste = largura + alturaProporcional; // 3.5f + 2.33f = 5.83f (usa a mesma proporção de grossura)
+    float yTopoLeste = 7.23f;
+    float yBaseLeste = -7.23f;
+
+    // arquibancada leste
+    glBegin(GL_QUADS);
+        glTexCoord2f(0.0f, 0.0f); glVertex2f(xInternoLeste, yBaseLeste); // inf esq 
+        glTexCoord2f(1.0f, 0.0f); glVertex2f(xExternoLeste, yBaseLeste); // inf dir 
+        glTexCoord2f(1.0f, 1.0f); glVertex2f(xExternoLeste, yTopoLeste); // sup dir 
+        glTexCoord2f(0.0f, 1.0f); glVertex2f(xInternoLeste, yTopoLeste); // sup esq
     glEnd();
 
     glDisable(GL_TEXTURE_2D);
