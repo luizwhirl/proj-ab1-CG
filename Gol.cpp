@@ -168,7 +168,8 @@ int Gol::resolverColisao(float& posX, float& posY, float raio) {
             if (posY - raio < -5.0f - Ds) {
                 posY = -5.0f - Ds + raio;
             }
-            if (posY < -5.2f) golMarcado = 1;
+            // retorna 2 se o gol foi no sul
+            if (posY < -5.2f) golMarcado = 2; 
         }
     }
 

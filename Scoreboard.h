@@ -22,6 +22,9 @@ public:
     
     void draw(int winW, int winH);
     void scoreBrazil();
+    
+    // pontua rival (depouis eu tiroo esse nome maldito da alemanha)
+    void scoreGermany(); 
 };
 
 #endif

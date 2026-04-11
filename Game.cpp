@@ -249,8 +249,17 @@ void Game::updatePlayer() {
     // i dispois resolve os gols por último
     gol.resolverColisao(jogador.x, jogador.y, 0.2f);
     
-    if (gol.resolverColisao(bola.x, bola.y, 0.1f) == 1) {
+    // verifica o tipo do gol (1 = brasil, 2 = alemanha)
+    int statusGol = gol.resolverColisao(bola.x, bola.y, 0.1f);
+    
+    if (statusGol == 1) {
         scoreboard.scoreBrazil();
+        bola.x = 0.0f;
+        bola.y = 0.0f;
+        bola.isHeld = false;
+    } else if (statusGol == 2) {
+        // se o status for 2 pontua para a alemanha
+        scoreboard.scoreGermany();
         bola.x = 0.0f;
         bola.y = 0.0f;
         bola.isHeld = false;

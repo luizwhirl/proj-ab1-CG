@@ -109,3 +109,8 @@ void Scoreboard::draw(int winW, int winH) {
 void Scoreboard::scoreBrazil() {
     scoreLeft++;
 }
+
+// vai se ferra aemanah
+void Scoreboard::scoreGermany() {
+    scoreRight++;
+}
