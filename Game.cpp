@@ -138,82 +138,102 @@ void Game::keyboardUp(unsigned char key, int x, int y) {
     if (key == 'k' || key == 'K') input.isKPressed = false;
 }
 
+float Game::pitagoras(float catetoAdj, float catetoOpos) {
+    float distance = sqrt(pow(catetoAdj, 2) + pow(catetoOpos, 2));
+    return distance;
+}
 
 // Atualiza a posição do jogador e da bola
-void Game::updatePlayer(){
-     std::stack<char> teclas;
+void Game::updatePlayer() {
+    float dirX = 0;
+    float dirY = 0;
 
-    if(input.isWPressed == true ) {
-        teclas.push('W');
+    // verifica a tecla pressionada e salva a ultima posição
+    if (input.isWPressed) { 
+        dirY += 1; 
+        jogador.lastDirection = 'W'; 
+    }
+    if (input.isSPressed) { 
+        dirY -= 1; 
+        jogador.lastDirection = 'S'; 
+    }
+    if (input.isDPressed) { 
+        dirX += 1; 
+        jogador.lastDirection = 'D'; 
+    }
+    if (input.isAPressed) { 
+        dirX -= 1; 
+        jogador.lastDirection = 'A'; 
     }
 
-    if(input.isAPressed == true ){
-        teclas.push('A');
+    // normaliza vetor (eu deveria ter prestado atenção na aula)
+    float magnitude = pitagoras(dirX, dirY);
+    if (magnitude > 0) {
+        dirX = dirX / magnitude;
+        dirY = dirY / magnitude;
     }
 
-    if(input.isSPressed == true ){
-        teclas.push('S');
-    }
+    // faz o jogador correr
+    float velocidadeJogador = 0.01f; 
+    jogador.x += dirX * velocidadeJogador;
+    jogador.y += dirY * velocidadeJogador;
 
-    if(input.isDPressed == true ){
-        teclas.push('D');
-    }
-
-  
-    // pega a bola se chegar perto dela
-    if (!bola.isHeld){
-        float catetoAdj = (bola.x - jogador.x);
-        float catetoOpos = (bola.y - jogador.y);
-        float distance = sqrt(pow(catetoAdj, 2) + pow(catetoOpos, 2));
-
-        if (distance < 0.4){
+    // pega a bola se chegar perto
+    if (!bola.isHeld) {
+        float distance = pitagoras(bola.x - jogador.x, bola.y - jogador.y);
+        if (distance < 0.4) {
+            bola.velX = 0;
+            bola.velY = 0;
             bola.isHeld = true;
-            bola.x = bola.x+0.05;
-            bola.y = bola.y+0.05;
         }
     }
 
-    // se apertou j tu solta a bola
-    if(input.isJPressed == true ){
+    // solta a bola manualmente
+    if (input.isJPressed) {
         bola.isHeld = false;
     }
 
-    // se apertar k dá um chutão
-    if (input.isKPressed == true) {
+    // dá o chutão 
+    if (input.isKPressed && bola.isHeld) {
         switch (jogador.lastDirection) {
-            case 'W':
-                bola.y+=0.09;
-                bola.isHeld = false;
-                break;
-            case 'A':
-                bola.x-=0.09;
-                bola.isHeld = false;
-                break;
-            case 'S':
-                bola.y-=0.09;
-                bola.isHeld = false;
-                break;
-            case 'D':
-                bola.x+=0.09;
-                bola.isHeld = false;
-                break;
-            default:
-                break;
-            }
+            case 'W': bola.velY += 0.05f; break;
+            case 'A': bola.velX -= 0.05f; break;
+            case 'S': bola.velY -= 0.05f; break;
+            case 'D': bola.velX += 0.05f; break;
+        }
+        bola.isHeld = false;
     }
 
-    while(!teclas.empty()){
-        // pega a tecla to topo
-        char tecla = teclas.top();
-        jogador.lastDirection = teclas.top();
-     
-        jogador.update(tecla);
-        if(bola.isHeld){
-            bola.update(tecla);
+    // o jogador sai driblando com a bola colada no pé
+    if (bola.isHeld) {
+        switch (jogador.lastDirection) {
+            case 'W':
+                bola.x = jogador.x;
+                bola.y = jogador.y + 0.4;
+                break;
+            case 'A':
+                bola.x = jogador.x - 0.4;
+                bola.y = jogador.y;
+                break;
+            case 'S':
+                bola.x = jogador.x;
+                bola.y = jogador.y - 0.4;
+                break;
+            case 'D':
+                bola.x = jogador.x + 0.4;
+                bola.y = jogador.y;
+                break;
         }
+    }
 
-        // solta a tecla do topo
-        teclas.pop();
+    if (!bola.isHeld) {
+        // adiciona aceleração a bola
+        bola.x += bola.velX;
+        bola.y += bola.velY;
+
+        // bola vai freiando na grama (papo de fisica)
+        bola.velX *= 0.98f;
+        bola.velY *= 0.98f;
     }
 
     // resolvendo as colisões DEPOIS do update de teclas
