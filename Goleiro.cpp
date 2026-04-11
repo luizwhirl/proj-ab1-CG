@@ -93,7 +93,7 @@ void Goleiro::update(const Bola& bola) {
 
             // erroHumano-> offset aleatório pra simularimprecisão 
             // ele só vai atualizar de vez em quando, ao inves do tempo todo
-            erroHumano = ((rand() % 100) / 100.0f - 0.5f) * 0.25f; // ±0.125 unidades
+            erroHumano = ((rand() % 100) / 100.0f - 0.5f) * 1.6f; // ±0.125 unidades
 
             alvoX = previsaoX + erroHumano;
         }
