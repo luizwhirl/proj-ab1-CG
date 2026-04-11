@@ -88,9 +88,6 @@ void Game::display() {
 
     scoreboard.draw(winW, winH);
 
-    // butaos de teste
-    scoreboard.drawTestButtons(winW, winH);
-
     glutSwapBuffers();
 }
 
@@ -104,12 +101,6 @@ void Game::reshape(int w, int h) {
 void Game::mouseClick(int button, int state, int x, int y) {
     if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
         
-        // mas primeiro vamos checar os botoes de teste (scoreboard resolve e checa a logica)
-        if (scoreboard.checkButtonLeftClick(x, y, winW, winH) || scoreboard.checkButtonRightClick(x, y, winW, winH)) {
-            glutPostRedisplay();
-            return;
-        }
-
         input.isZoomed = !input.isZoomed;
         
         if (input.isZoomed) {
@@ -237,7 +228,13 @@ void Game::updatePlayer(){
 
     // i dispois resolve os gols por último
     gol.resolverColisao(jogador.x, jogador.y, 0.2f);
-    gol.resolverColisao(bola.x, bola.y, 0.1f);
+    
+    if (gol.resolverColisao(bola.x, bola.y, 0.1f) == 1) {
+        scoreboard.scoreBrazil();
+        bola.x = 0.0f;
+        bola.y = 0.0f;
+        bola.isHeld = false;
+    }
 
     glutPostRedisplay();
 }

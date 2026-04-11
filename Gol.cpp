@@ -114,7 +114,7 @@ void Gol::draw() {
     glLineWidth(1.0f); 
 }
 
-void Gol::resolverColisao(float& posX, float& posY, float raio) {
+int Gol::resolverColisao(float& posX, float& posY, float raio) {
     float W = 0.45f; // largura do gol
     float Dn = 0.25f;  // profundidade do gol norte
     float Ds = 0.4f;   // profundidade do gol sul
@@ -122,6 +122,7 @@ void Gol::resolverColisao(float& posX, float& posY, float raio) {
     // Usamos um raio "fictício" menor para bater na rede do fundo, 
     // assim o jogador não é barrado cedo demais e visualmente entra no gol
     float raioFundo = 0.05f; 
+    int golMarcado = 0;
 
     // GOL NORTE
     if (posY + raio > 5.0f && posY - raio < 5.5f) {
@@ -143,6 +144,7 @@ void Gol::resolverColisao(float& posX, float& posY, float raio) {
             if (posY + raioFundo > 5.5f) {
                 posY = 5.5f - raioFundo;
             }
+            if (posY > 5.2f) golMarcado = 1;
         }
     }
     
@@ -166,6 +168,9 @@ void Gol::resolverColisao(float& posX, float& posY, float raio) {
             if (posY - raio < -5.0f - Ds) {
                 posY = -5.0f - Ds + raio;
             }
+            if (posY < -5.2f) golMarcado = 1;
         }
     }
+
+    return golMarcado;
 }
