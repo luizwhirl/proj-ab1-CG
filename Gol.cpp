@@ -104,7 +104,7 @@ void Gol::draw() {
     // as traves brancas 
     glColor3f(1.0f, 1.0f, 1.0f);
     glLineWidth(3.0f); 
-    glBegin(GL_LINE_STRIP);
+    glBegin(GL_LINE_LOOP);
         glVertex2f(-W, baseSul);      // poste esq 
         glVertex2f(-W, topoSul);      // poste esq topo
         glVertex2f( W, topoSul);      // crossbar 
@@ -124,7 +124,7 @@ void Gol::resolverColisao(float& posX, float& posY, float raio) {
     float raioFundo = 0.05f; 
 
     // GOL NORTE
-    if (posY + raio > 5.0f && posY - raio < 5.0f + Dn) {
+    if (posY + raio > 5.0f && posY - raio < 5.5f) {
         
         // Colisão com a rede/trave lateral esquerda
         if (std::abs(posX - (-W)) < raio) {
@@ -140,14 +140,14 @@ void Gol::resolverColisao(float& posX, float& posY, float raio) {
         
         // Colisão com o fundo da rede (limitado ao espaço entre as traves laterais para não enroscar na quina)
         if (posX > -W + 0.05f && posX < W - 0.05f) { 
-            if (posY + raioFundo > 5.0f + Dn) {
-                posY = 5.0f + Dn - raioFundo;
+            if (posY + raioFundo > 5.5f) {
+                posY = 5.5f - raioFundo;
             }
         }
     }
     
     // GOL SUL
-    if (posY - raio < -5.0f && posY + raio > -5.0f - Ds) {
+    if (posY - raio < -5.0f && posY + raio > -5.5f) {
         
         // Colisão lateral esquerda
         if (std::abs(posX - (-W)) < raio) {
@@ -162,9 +162,9 @@ void Gol::resolverColisao(float& posX, float& posY, float raio) {
         }
         
         // Colisão com o fundo da rede
-        if (posX > -W + 0.05f && posX < W - 0.05f) { 
-            if (posY - raioFundo < -5.0f - Ds) {
-                posY = -5.0f - Ds + raioFundo;
+        if (posX > -W - 0.05f && posX < W + 0.05f) { 
+            if (posY - raio < -5.0f - Ds) {
+                posY = -5.0f - Ds + raio;
             }
         }
     }
