@@ -11,6 +11,7 @@ constexpr float PI = 3.14159265358979323846f;
 Campo::Campo() {
     grassTexture = 0;
     arquibancadaTexture = 0;
+    arquibancadaTextureB = 0;
 }
 
 void Campo::createGrassTexture() {
@@ -48,7 +49,9 @@ void Campo::createGrassTexture() {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 }
 
-void Campo::loadArquibancadaTexture(const char* filepath) {
+// função para carregar as texturas das arquibancadas norte e sul
+void Campo::loadArquibancadaTextures(const char* filepathA, const char* filepathB) {
+    // arkibankada norte
     glGenTextures(1, &arquibancadaTexture);
     glBindTexture(GL_TEXTURE_2D, arquibancadaTexture);
 
@@ -61,13 +64,31 @@ void Campo::loadArquibancadaTexture(const char* filepath) {
     int width, height, nrChannels;
     stbi_set_flip_vertically_on_load(true); 
     
-    unsigned char *data = stbi_load(filepath, &width, &height, &nrChannels, 0);
+    unsigned char *data = stbi_load(filepathA, &width, &height, &nrChannels, 0);
     if (data) {
         GLenum format = (nrChannels == 4) ? GL_RGBA : GL_RGB;
         glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
         stbi_image_free(data);
     } else {
-        std::cerr << "Falha ao carregar a textura da arquibancada: " << filepath << std::endl;
+        std::cerr << "Falha ao carregar a textura da arquibancada: " << filepathA << std::endl;
+    }
+
+    // carregada textura da arquibancada sulll
+    glGenTextures(1, &arquibancadaTextureB);
+    glBindTexture(GL_TEXTURE_2D, arquibancadaTextureB);
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    unsigned char *dataB = stbi_load(filepathB, &width, &height, &nrChannels, 0);
+    if (dataB) {
+        GLenum format = (nrChannels == 4) ? GL_RGBA : GL_RGB;
+        glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, dataB);
+        stbi_image_free(dataB);
+    } else {
+        std::cerr << "Falha ao carregar a textura da arquibancada B: " << filepathB << std::endl;
     }
 }
 
@@ -140,18 +161,21 @@ void Campo::drawArquibancada() {
 
     // reativa a textura para o resto do campo funcionar normal
     glEnable(GL_TEXTURE_2D);
-    glBindTexture(GL_TEXTURE_2D, arquibancadaTexture);
+    
+    // link da arkimancada sul
+    glBindTexture(GL_TEXTURE_2D, arquibancadaTextureB);
     glColor3f(1.0f, 1.0f, 1.0f);
 
     // arkibankada sulll
     float baseSul = -5.5f;
     float topoSul = baseSul - alturaProporcional;
 
+    // arquibancada sulll
     glBegin(GL_QUADS);
-        glTexCoord2f(0.0f, 1.0f); glVertex2f(-largura, topoSul);
-        glTexCoord2f(1.0f, 1.0f); glVertex2f( largura, topoSul);
-        glTexCoord2f(1.0f, 0.0f); glVertex2f( largura, baseSul);
-        glTexCoord2f(0.0f, 0.0f); glVertex2f(-largura, baseSul);
+        glTexCoord2f(0.0f, 0.0f); glVertex2f(-largura, topoSul);
+        glTexCoord2f(1.0f, 0.0f); glVertex2f( largura, topoSul);
+        glTexCoord2f(1.0f, 1.0f); glVertex2f( largura, baseSul);
+        glTexCoord2f(0.0f, 1.0f); glVertex2f(-largura, baseSul);
     glEnd();
 
     glDisable(GL_TEXTURE_2D);

@@ -8,6 +8,7 @@ private:
     // variavel do id da grama random
     GLuint grassTexture;
     GLuint arquibancadaTexture;
+    GLuint arquibancadaTextureB;
 
     void drawCircle(float cx, float cy, float r, int num_segments);
     void drawFieldLines();
@@ -20,7 +21,9 @@ public:
     
     // gerar nossa graminha randomizada
     void createGrassTexture();
-    void loadArquibancadaTexture(const char* filepath);
+    
+    // carregar as arquibancadas
+    void loadArquibancadaTextures(const char* filepathA, const char* filepathB); 
     void draw();
 
     // metodo para barrar a saida do gramado
