@@ -12,9 +12,6 @@ public:
 
     // da a luz ao jogador
     void draw();
-    
-    // jogador corre
-    void update(char);
 };
 
 #endif

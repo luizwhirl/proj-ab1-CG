@@ -35,6 +35,7 @@ public:
     void keyboardClick(unsigned char key, int x, int y);
     void keyboardUp(unsigned char key, int x, int y);
     void updatePlayer();
+    float pitagoras(float, float);
 
     static Game* getInstance();
 

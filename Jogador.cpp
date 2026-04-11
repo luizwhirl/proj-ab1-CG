@@ -22,23 +22,3 @@ void Jogador::draw() {
 
     glPopMatrix();
 }
-
-// Jogador sai andando por ai
-void Jogador::update(char direction) {
-    switch (direction) {
-    case 'D':
-        x+= 0.015f;
-        break;
-    case 'A':
-        x-= 0.015f;
-        break;
-    case 'W':
-        y+= 0.015f;
-        break;
-    case 'S':
-        y-= 0.015f;
-        break;
-    default:
-        break;
-    }
-}
