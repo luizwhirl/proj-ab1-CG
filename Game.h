@@ -7,6 +7,7 @@
 #include "InputManager.h"
 #include "Bola.h"
 #include "Jogador.h"
+#include "Goleiro.h"
 
 // Scene / Game State e Window / Context Manager
 class Game {
@@ -19,6 +20,7 @@ private:
     InputManager input;
     Bola bola;
     Jogador jogador;
+    Goleiro goleiro; // INCLUÍDO AQUI
 
     static Game* instance;
 
