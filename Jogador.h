@@ -5,6 +5,7 @@ class Jogador {
 public:
     float x;
     float y;
+    char lastDirection = 'W';
 
     // corinthians é gigante
     Jogador(); 

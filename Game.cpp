@@ -145,9 +145,10 @@ void Game::keyboardUp(unsigned char key, int x, int y) {
 }
 
 
+// Atualiza a posição do jogador e da bola
 void Game::updatePlayer(){
      std::stack<char> teclas;
- 
+
     if(input.isWPressed == true ) {
         teclas.push('W');
     }
@@ -164,33 +165,60 @@ void Game::updatePlayer(){
         teclas.push('D');
     }
 
-    if(input.isKPressed == true ){
-        bola.y+=0.04f;
-        bola.isHeld = false;
-    }
-
+  
+    // pega a bola se chegar perto dela
     if (!bola.isHeld){
         float catetoAdj = (bola.x - jogador.x);
         float catetoOpos = (bola.y - jogador.y);
         float distance = sqrt(pow(catetoAdj, 2) + pow(catetoOpos, 2));
 
-        if (distance < 0.5){
+        if (distance < 0.4){
             bola.isHeld = true;
             bola.x = bola.x+0.05;
             bola.y = bola.y+0.05;
         }
     }
 
+    // se apertou j tu solta a bola
     if(input.isJPressed == true ){
         bola.isHeld = false;
     }
 
+    // se apertar k dá um chutão
+    if (input.isKPressed == true) {
+        switch (jogador.lastDirection) {
+            case 'W':
+                bola.y+=0.09;
+                bola.isHeld = false;
+                break;
+            case 'A':
+                bola.x-=0.09;
+                bola.isHeld = false;
+                break;
+            case 'S':
+                bola.y-=0.09;
+                bola.isHeld = false;
+                break;
+            case 'D':
+                bola.x+=0.09;
+                bola.isHeld = false;
+                break;
+            default:
+                break;
+            }
+    }
+
     while(!teclas.empty()){
+        // pega a tecla to topo
         char tecla = teclas.top();
+        jogador.lastDirection = teclas.top();
+     
         jogador.update(tecla);
         if(bola.isHeld){
             bola.update(tecla);
         }
+
+        // solta a tecla do topo
         teclas.pop();
     }
 
