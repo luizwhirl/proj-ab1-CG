@@ -79,6 +79,9 @@ void Game::display() {
     // jogador e bola vêm primeiro
     jogador.draw();
     bola.draw();
+    
+    // desenha o goleiro
+    goleiro.draw();
 
     // os gols sao desenhados POR ÚLTIMO pra rede e o topo aparecerem ACIMA deles visualmente
     gol.draw();
@@ -222,12 +225,17 @@ void Game::updatePlayer(){
         teclas.pop();
     }
 
-    // Resolvendo as colisões DEPOIS do update de teclas
-    // Primeiro os limites do campo para não deixar ngm sair
+    // resolvendo as colisões DEPOIS do update de teclas
+    // primeiro os limites do campo para não deixar ngm sair
     campo.resolverColisaoLimites(jogador.x, jogador.y, 0.2f);
     campo.resolverColisaoLimites(bola.x, bola.y, 0.1f);
 
-    // Em seguida resolve os gols por último
+    // atualiza lógica do goleiro (movimento) e colisões dele com jogador e bola
+    goleiro.update(bola);
+    goleiro.resolverColisao(jogador.x, jogador.y, 0.2f);
+    goleiro.resolverColisao(bola.x, bola.y, 0.1f);
+
+    // i dispois resolve os gols por último
     gol.resolverColisao(jogador.x, jogador.y, 0.2f);
     gol.resolverColisao(bola.x, bola.y, 0.1f);
 
