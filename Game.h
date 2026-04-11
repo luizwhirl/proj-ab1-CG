@@ -1,6 +1,7 @@
 #ifndef GAME_H
 #define GAME_H
 
+#include <vector>
 #include "Campo.h"
 #include "Gol.h"
 #include "Scoreboard.h"
@@ -13,14 +14,16 @@
 class Game {
 private:
     int winW, winH;
-    
+    int indiceJogador = 0;
+
     Campo campo;
     Gol gol;
     Scoreboard scoreboard;
     InputManager input;
     Bola bola;
-    Jogador jogador;
+    std::vector<Jogador> timeAliado{3};
     Goleiro goleiro; // INCLUÍDO AQUI
+     
 
     static Game* instance;
 

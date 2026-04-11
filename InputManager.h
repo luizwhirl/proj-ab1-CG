@@ -13,6 +13,8 @@ public:
     bool isDPressed;
     bool isJPressed;
     bool isKPressed;
+    bool isLPressed;
+    bool wasLPressed;
 
     InputManager();
     

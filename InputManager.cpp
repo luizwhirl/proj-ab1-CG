@@ -11,6 +11,8 @@ InputManager::InputManager() {
     isDPressed = false;
     isJPressed = false;
     isKPressed = false;
+    isLPressed = false;
+    wasLPressed = false;
 }
 
 void InputManager::updateMouseWorldCoords(int x, int y, int winW, int winH) {

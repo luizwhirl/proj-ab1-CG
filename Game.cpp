@@ -77,7 +77,9 @@ void Game::display() {
     campo.draw();
 
     // jogador e bola vêm primeiro
-    jogador.draw();
+    for (int x=0; x<timeAliado.size(); x++){
+        timeAliado[x].draw();
+    }
     bola.draw();
     
     // desenha o goleiro
@@ -135,6 +137,7 @@ void Game::keyboardClick(unsigned char key, int x, int y) {
     if (key == 'd' || key == 'D') input.isDPressed = true;
     if (key == 'j' || key == 'J') input.isJPressed = true;
     if (key == 'k' || key == 'K') input.isKPressed = true;
+    if (key == 'l' || key == 'L') input.isLPressed = true;
 }
 
 // ve se a tecla foi solto
@@ -145,6 +148,8 @@ void Game::keyboardUp(unsigned char key, int x, int y) {
     if (key == 'd' || key == 'D') input.isDPressed = false;
     if (key == 'j' || key == 'J') input.isJPressed = false;
     if (key == 'k' || key == 'K') input.isKPressed = false;
+    if (key == 'l' || key == 'L') input.isLPressed = false;
+
 }
 
 float Game::pitagoras(float catetoAdj, float catetoOpos) {
@@ -160,19 +165,19 @@ void Game::updatePlayer() {
     // verifica a tecla pressionada e salva a ultima posição
     if (input.isWPressed) { 
         dirY += 1; 
-        jogador.lastDirection = 'W'; 
+        timeAliado[indiceJogador].lastDirection = 'W'; 
     }
     if (input.isSPressed) { 
         dirY -= 1; 
-        jogador.lastDirection = 'S'; 
+        timeAliado[indiceJogador].lastDirection = 'S'; 
     }
     if (input.isDPressed) { 
         dirX += 1; 
-        jogador.lastDirection = 'D'; 
+        timeAliado[indiceJogador].lastDirection = 'D'; 
     }
     if (input.isAPressed) { 
         dirX -= 1; 
-        jogador.lastDirection = 'A'; 
+        timeAliado[indiceJogador].lastDirection = 'A'; 
     }
 
     // normaliza vetor (eu deveria ter prestado atenção na aula)
@@ -184,12 +189,15 @@ void Game::updatePlayer() {
 
     // faz o jogador correr
     float velocidadeJogador = 0.01f; 
-    jogador.x += dirX * velocidadeJogador;
-    jogador.y += dirY * velocidadeJogador;
+    timeAliado[indiceJogador].x += dirX * velocidadeJogador;
+    timeAliado[indiceJogador].y += dirY * velocidadeJogador;
 
     // pega a bola se chegar perto
     if (!bola.isHeld) {
-        float distance = pitagoras(bola.x - jogador.x, bola.y - jogador.y);
+        float distance = pitagoras(
+            bola.x - timeAliado[indiceJogador].x, 
+            bola.y - timeAliado[indiceJogador].y
+        );
         if (distance < 0.4) {
             bola.velX = 0;
             bola.velY = 0;
@@ -197,14 +205,28 @@ void Game::updatePlayer() {
         }
     }
 
-    // solta a bola manualmente
-    if (input.isJPressed) {
-        bola.isHeld = false;
+    // isso mesmo garotinho joga la bola para o papai
+    if (input.isJPressed && bola.isHeld) {
+        // achar o jogador mais proximo
+        float menorDist = 100000000.0f;
+        for(int x=0; x < timeAliado.size(); x++){
+            if(x != indiceJogador){
+                float distancia = pitagoras(
+                timeAliado[indiceJogador].x - timeAliado[x].x,
+                timeAliado[indiceJogador].y - timeAliado[x].y
+                );
+
+                if (distancia < menorDist){
+                    menorDist = distancia;
+                }
+            }
+        }
+        //
     }
 
     // dá o chutão 
     if (input.isKPressed && bola.isHeld) {
-        switch (jogador.lastDirection) {
+        switch (timeAliado[indiceJogador].lastDirection) {
             case 'W': bola.velY += 0.05f; break;
             case 'A': bola.velX -= 0.05f; break;
             case 'S': bola.velY -= 0.05f; break;
@@ -213,24 +235,32 @@ void Game::updatePlayer() {
         bola.isHeld = false;
     }
 
+    // troca de jogador
+    if (input.isLPressed && !input.wasLPressed) {
+        indiceJogador++;
+        if (indiceJogador >= timeAliado.size()) {
+            indiceJogador = 0;
+        }
+    }
+
     // o jogador sai driblando com a bola colada no pé
     if (bola.isHeld) {
-        switch (jogador.lastDirection) {
+        switch (timeAliado[indiceJogador].lastDirection) {
             case 'W':
-                bola.x = jogador.x;
-                bola.y = jogador.y + 0.4;
+                bola.x = timeAliado[indiceJogador].x;
+                bola.y = timeAliado[indiceJogador].y + 0.4;
                 break;
             case 'A':
-                bola.x = jogador.x - 0.4;
-                bola.y = jogador.y;
+                bola.x = timeAliado[indiceJogador].x - 0.4;
+                bola.y = timeAliado[indiceJogador].y;
                 break;
             case 'S':
-                bola.x = jogador.x;
-                bola.y = jogador.y - 0.4;
+                bola.x = timeAliado[indiceJogador].x;
+                bola.y = timeAliado[indiceJogador].y - 0.4;
                 break;
             case 'D':
-                bola.x = jogador.x + 0.4;
-                bola.y = jogador.y;
+                bola.x = timeAliado[indiceJogador].x + 0.4;
+                bola.y = timeAliado[indiceJogador].y;
                 break;
         }
     }
@@ -247,17 +277,19 @@ void Game::updatePlayer() {
 
     // resolvendo as colisões DEPOIS do update de teclas
     // primeiro os limites do campo para não deixar ngm sair
-    campo.resolverColisaoLimites(jogador.x, jogador.y, 0.2f);
+    campo.resolverColisaoLimites(timeAliado[indiceJogador].x, timeAliado[indiceJogador].y, 0.2f);
     campo.resolverColisaoLimites(bola.x, bola.y, 0.1f);
 
     // atualiza lógica do goleiro (movimento) e colisões dele com jogador e bola
     goleiro.update(bola);
-    goleiro.resolverColisao(jogador.x, jogador.y, 0.2f);
+    goleiro.resolverColisao(timeAliado[indiceJogador].x, timeAliado[indiceJogador].y, 0.2f);
     goleiro.resolverColisao(bola.x, bola.y, 0.1f);
 
     // i dispois resolve os gols por último
-    gol.resolverColisao(jogador.x, jogador.y, 0.2f);
+    gol.resolverColisao(timeAliado[indiceJogador].x, timeAliado[indiceJogador].y, 0.2f);
     gol.resolverColisao(bola.x, bola.y, 0.1f);
+
+    input.wasLPressed = input.isLPressed;
 
     glutPostRedisplay();
 }
