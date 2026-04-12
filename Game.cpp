@@ -40,11 +40,10 @@ void Game::init() {
     // passano os caminhos das bichas
     campo.loadArquibancadaTextures("assets/sprites/arquibancadaA.png", "assets/sprites/ArquibancadaB.png", "assets/sprites/ArquibancadaC.png", "assets/sprites/ArquibancadaD.png");
     
-    // texuta do jogaodr do chiquinho sorbetes
-
-
     for (int x=0; x<timeAliado.size(); x++){
-        timeAliado[x].loadTexture("assets/sprites/f1.png");
+        // classe AnimacaoJogador carrega todos os sprites do jogador internamente
+        // o loadtexture vai chamar ela dispois
+        timeAliado[x].loadTexture();
     }
 }
 
@@ -186,10 +185,24 @@ void Game::updatePlayer() {
 
     // normaliza vetor (eu deveria ter prestado atenção na aula)
     float magnitude = pitagoras(dirX, dirY);
+    bool isMoving = false; // variav de controle para saber se jogador ta em movimento
+
     if (magnitude > 0) {
         dirX = dirX / magnitude;
         dirY = dirY / magnitude;
+        isMoving = true; 
+        // se magnitude > 0
+        //  entao ele ta tentano se move
     }
+
+    // grante que os outros jogadores do time que não estão 
+    // sendo controlados parem a animação
+    for (int x = 0; x < timeAliado.size(); x++) {
+        timeAliado[x].setAndando(false);
+    }
+    
+    // atualizao estado da animação do jogador atual com base no movimento
+    timeAliado[indiceJogador].setAndando(isMoving);
 
     // faz o jogador correr
     float velocidadeJogador = 0.01f; 

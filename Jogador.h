@@ -2,6 +2,7 @@
 #define JOGADOR_H
 
 #include <GL/glut.h>
+#include "AnimacaoJogador.h"
 
 class Jogador {
 public:
@@ -9,8 +10,8 @@ public:
     float y;
     char lastDirection = 'W';
     
-    // armazenah o ID da textura do sprite
-    GLuint textureID; 
+    // objeto de animacao ablablabla
+    AnimacaoJogador animacao; 
 
     // corinthians é gigante
     Jogador(); 
@@ -19,7 +20,10 @@ public:
     void draw();
     
     // carrega o sprite
-    void loadTexture(const char* filename);
+    void loadTexture(); 
+    
+    // metodo pro jogadorsaber qando deve comecar a animacao de andar
+    void setAndando(bool andando); 
 };
 
 #endif
