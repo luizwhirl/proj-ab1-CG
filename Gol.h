@@ -9,7 +9,7 @@ public:
     void draw();
     
     // metodo - checar colisao barrando posições diretamente
-    void resolverColisao(float& posX, float& posY, float raio);
+    int resolverColisao(float& posX, float& posY, float raio);
 };
 
 #endif

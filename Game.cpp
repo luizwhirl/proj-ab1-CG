@@ -11,6 +11,10 @@ Game* Game::instance = nullptr;
 Game::Game() {
     winW = 600;
     winH = 800;
+
+    // inicialização dos dois goleiros, definindo suas posições no eixo Y e passando true/false para a tag isTop
+    goleiroAlemanha = Goleiro(0.0f, 4.5f, 0.015f, -1.5f, 1.5f, true);
+    goleiroBrasil = Goleiro(0.0f, -4.5f, 0.015f, -1.5f, 1.5f, false);
 }
 
 Game* Game::getInstance() {
@@ -33,7 +37,15 @@ void Game::init() {
     campo.createGrassTexture();
 
     // carreguemos as texturas aquiiis
-    campo.loadArquibancadaTexture("assets/sprites/arquibancadaA.png");
+    // passano os caminhos das bichas
+    campo.loadArquibancadaTextures("assets/sprites/arquibancadaA.png", "assets/sprites/ArquibancadaB.png", "assets/sprites/ArquibancadaC.png", "assets/sprites/ArquibancadaD.png");
+    
+    // texuta do jogaodr do chiquinho sorbetes
+
+
+    for (int x=0; x<timeAliado.size(); x++){
+        timeAliado[x].loadTexture("assets/sprites/f1.png");
+    }
 }
 
 void Game::setupCamera() {
@@ -83,15 +95,13 @@ void Game::display() {
     bola.draw();
     
     // desenha o goleiro
-    goleiro.draw();
+    goleiroAlemanha.draw();
+    goleiroBrasil.draw();
 
     // os gols sao desenhados POR ÚLTIMO pra rede e o topo aparecerem ACIMA deles visualmente
     gol.draw();
 
     scoreboard.draw(winW, winH);
-
-    // butaos de teste
-    scoreboard.drawTestButtons(winW, winH);
 
     glutSwapBuffers();
 }
@@ -106,12 +116,6 @@ void Game::reshape(int w, int h) {
 void Game::mouseClick(int button, int state, int x, int y) {
     if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
         
-        // mas primeiro vamos checar os botoes de teste (scoreboard resolve e checa a logica)
-        if (scoreboard.checkButtonLeftClick(x, y, winW, winH) || scoreboard.checkButtonRightClick(x, y, winW, winH)) {
-            glutPostRedisplay();
-            return;
-        }
-
         input.isZoomed = !input.isZoomed;
         
         if (input.isZoomed) {
@@ -311,7 +315,7 @@ void Game::updatePlayer() {
     input.wasJPressed = input.isJPressed;
     input.wasLPressed = input.isLPressed;
 
-    if(bola.framesIntocavel > 0){
+    if (bola.framesIntocavel > 0){
         bola.framesIntocavel--;
     }
 

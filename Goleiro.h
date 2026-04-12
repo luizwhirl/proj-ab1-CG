@@ -22,9 +22,12 @@ public:
 
     // só pro bicho numficar roubado 
     float erroHumano;
+    
+    bool isTop; // essa praguinha define se é o goleiro de cima (alemanha buuu) ou baixo (brasil ihaaa)
 
     Goleiro();
-    Goleiro(float startX, float startY, float v, float lEsq, float lDir);
+    // pro construtor saber o lado dele - recebe isTopGoleiro
+    Goleiro(float startX, float startY, float v, float lEsq, float lDir, bool isTopGoleiro);
 
     void draw();
     void update(const Bola& bola);
