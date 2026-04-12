@@ -198,7 +198,7 @@ void Game::updatePlayer() {
             bola.x - timeAliado[indiceJogador].x, 
             bola.y - timeAliado[indiceJogador].y
         );
-        if (distance < 0.4) {
+        if (distance < 0.4 && bola.framesIntocavel == 0) {
             bola.velX = 0;
             bola.velY = 0;
             bola.isHeld = true;
@@ -206,9 +206,10 @@ void Game::updatePlayer() {
     }
 
     // isso mesmo garotinho joga la bola para o papai
-    if (input.isJPressed && bola.isHeld) {
+    if (input.isJPressed && !input.wasJPressed && bola.isHeld) {
         // achar o jogador mais proximo
         float menorDist = 100000000.0f;
+        int maisProx = -1;
         for(int x=0; x < timeAliado.size(); x++){
             if(x != indiceJogador){
                 float distancia = pitagoras(
@@ -218,10 +219,28 @@ void Game::updatePlayer() {
 
                 if (distancia < menorDist){
                     menorDist = distancia;
+                    maisProx = x;
                 }
             }
         }
-        //
+        // torna a bola intocavel por uns frames durante o passe
+        bola.framesIntocavel = 15;
+
+        // calculamos a direção do jogador
+        float vectorX = (timeAliado[maisProx].x - timeAliado[indiceJogador].x)/menorDist;
+        float vectorY = (timeAliado[maisProx].y - timeAliado[indiceJogador].y)/menorDist;
+
+        // calcula a velocidade da bola
+        float velBola = menorDist * 0.02f;
+
+        if(velBola < 0.04f){
+            velBola = 0.04f;
+        }
+        // o chute é ajustado de acordo com a distância
+        bola.velX += vectorX * (velBola);
+        bola.velY += vectorY * (velBola);
+        bola.isHeld = false;
+        indiceJogador = maisProx;
     }
 
     // dá o chutão 
@@ -289,7 +308,12 @@ void Game::updatePlayer() {
     gol.resolverColisao(timeAliado[indiceJogador].x, timeAliado[indiceJogador].y, 0.2f);
     gol.resolverColisao(bola.x, bola.y, 0.1f);
 
+    input.wasJPressed = input.isJPressed;
     input.wasLPressed = input.isLPressed;
+
+    if(bola.framesIntocavel > 0){
+        bola.framesIntocavel--;
+    }
 
     glutPostRedisplay();
 }

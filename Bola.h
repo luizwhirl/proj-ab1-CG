@@ -8,6 +8,7 @@ public:
     bool isHeld = false;
     float velX = 0;
     float velY = 0;
+    int framesIntocavel = 0;
 
     // voce vai ver quando minha mae comprar uma bola quadrada
     Bola(); 
