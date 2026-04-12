@@ -39,6 +39,9 @@ void Game::init() {
     // carreguemos as texturas aquiiis
     // passano os caminhos das bichas
     campo.loadArquibancadaTextures("assets/sprites/arquibancadaA.png", "assets/sprites/ArquibancadaB.png", "assets/sprites/ArquibancadaC.png", "assets/sprites/ArquibancadaD.png");
+    
+    // texuta do jogaodr do chiquinho sorbetes
+    jogador.loadTexture("assets/sprites/f1.png");
 }
 
 void Game::setupCamera() {
