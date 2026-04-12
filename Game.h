@@ -20,7 +20,9 @@ private:
     InputManager input;
     Bola bola;
     Jogador jogador;
-    Goleiro goleiro;
+    
+    Goleiro goleiroAlemanha; // di cima
+    Goleiro goleiroBrasil;   // di baxo
 
     static Game* instance;
 

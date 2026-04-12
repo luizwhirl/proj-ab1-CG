@@ -24,9 +24,11 @@ Goleiro::Goleiro() {
 
     // Offset de erro
     erroHumano = 0.0f;
+    isTop = true; 
+    // por padrão ele é o goleiro de cima
 }
 
-Goleiro::Goleiro(float startX, float startY, float v, float lEsq, float lDir) {
+Goleiro::Goleiro(float startX, float startY, float v, float lEsq, float lDir, bool isTopGoleiro) {
     x = startX;
     y = startY;
     velocidade     = v;
@@ -43,13 +45,20 @@ Goleiro::Goleiro(float startX, float startY, float v, float lEsq, float lDir) {
     direcaoPatrulha = 1.0f;
     tempoDirecao    = 0;
     erroHumano      = 0.0f;
+    
+    isTop = isTopGoleiro; // gravah de qual lado o goleiro é
 }
 
 void Goleiro::draw() {
     glPushMatrix();
     glTranslatef(x, y, 0.0f);
 
-    glColor3f(1.0f, 1.0f, 0.0f);
+    if (isTop) {
+        glColor3f(0.5f, 0.5f, 0.5f); // cinza pra alemnha pq eles sao fei
+    } else {
+        glColor3f(1.0f, 1.0f, 0.0f); // amarelo pro brasil proque sim 😎
+    }
+    
     glBegin(GL_QUADS);
         glVertex2f(-largura/2, -altura/2);
         glVertex2f( largura/2, -altura/2);
@@ -71,7 +80,10 @@ void Goleiro::update(const Bola& bola) {
 
     if (tempoAtual - ultimoTempoAtualizacao > atrasoEfetivo) {
 
-        if (bola.y < 0.0f) {
+        // a verificacao se a bola está no campo do goleiro depende se ele é o de cima (y<0 está longe) ou baixo (y>0 está longe)
+        bool bolaLonge = isTop ? (bola.y < 0.0f) : (bola.y > 0.0f); // ADICIONADO
+        
+        if (bolaLonge) { // ALTERADO: Substitui o 'if (bola.y < 0.0f)' genérico
             // patrulha-> movimento mais oscilatório ao invés de pular di la prah ca
             // a cada 1.5-2.5 segundos
             if (tempoAtual - tempoDirecao > 1500 + rand() % 1000) {

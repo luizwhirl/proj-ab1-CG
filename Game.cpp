@@ -11,6 +11,10 @@ Game* Game::instance = nullptr;
 Game::Game() {
     winW = 600;
     winH = 800;
+
+    // inicialização dos dois goleiros, definindo suas posições no eixo Y e passando true/false para a tag isTop
+    goleiroAlemanha = Goleiro(0.0f, 4.5f, 0.015f, -1.5f, 1.5f, true);
+    goleiroBrasil = Goleiro(0.0f, -4.5f, 0.015f, -1.5f, 1.5f, false);
 }
 
 Game* Game::getInstance() {
@@ -81,7 +85,8 @@ void Game::display() {
     bola.draw();
     
     // desenha o goleiro
-    goleiro.draw();
+    goleiroAlemanha.draw();
+    goleiroBrasil.draw();
 
     // os gols sao desenhados POR ÚLTIMO pra rede e o topo aparecerem ACIMA deles visualmente
     gol.draw();
@@ -242,9 +247,13 @@ void Game::updatePlayer() {
     campo.resolverColisaoLimites(bola.x, bola.y, 0.1f);
 
     // atualiza lógica do goleiro (movimento) e colisões dele com jogador e bola
-    goleiro.update(bola);
-    goleiro.resolverColisao(jogador.x, jogador.y, 0.2f);
-    goleiro.resolverColisao(bola.x, bola.y, 0.1f);
+    goleiroAlemanha.update(bola);
+    goleiroAlemanha.resolverColisao(jogador.x, jogador.y, 0.2f);
+    goleiroAlemanha.resolverColisao(bola.x, bola.y, 0.1f);
+
+    goleiroBrasil.update(bola);
+    goleiroBrasil.resolverColisao(jogador.x, jogador.y, 0.2f);
+    goleiroBrasil.resolverColisao(bola.x, bola.y, 0.1f);
 
     // i dispois resolve os gols por último
     gol.resolverColisao(jogador.x, jogador.y, 0.2f);
