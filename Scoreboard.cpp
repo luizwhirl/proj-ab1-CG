@@ -106,11 +106,11 @@ void Scoreboard::draw(int winW, int winH) {
     endHUD();
 }
 
-void Scoreboard::scoreBrazil() {
+void Scoreboard::scoreAliado() {
     scoreLeft++;
 }
 
 // vai se ferra aemanah
-void Scoreboard::scoreGermany() {
+void Scoreboard::scoreRival() {
     scoreRight++;
 }

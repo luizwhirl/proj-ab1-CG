@@ -13,8 +13,8 @@ Game::Game() {
     winH = 800;
 
     // inicialização dos dois goleiros, definindo suas posições no eixo Y e passando true/false para a tag isTop
-    goleiroAlemanha = Goleiro(0.0f, 4.5f, 0.015f, -1.5f, 1.5f, true);
-    goleiroBrasil = Goleiro(0.0f, -4.5f, 0.015f, -1.5f, 1.5f, false);
+    goleiroRival = Goleiro(0.0f, 4.5f, 0.015f, -1.5f, 1.5f, true);
+    goleiroAliado = Goleiro(0.0f, -4.5f, 0.015f, -1.5f, 1.5f, false);
 }
 
 Game* Game::getInstance() {
@@ -95,8 +95,8 @@ void Game::display() {
     bola.draw();
     
     // desenha o goleiro
-    goleiroAlemanha.draw();
-    goleiroBrasil.draw();
+    goleiroRival.draw();
+    goleiroAliado.draw();
 
     // os gols sao desenhados POR ÚLTIMO pra rede e o topo aparecerem ACIMA deles visualmente
     gol.draw();
@@ -304,13 +304,36 @@ void Game::updatePlayer() {
     campo.resolverColisaoLimites(bola.x, bola.y, 0.1f);
 
     // atualiza lógica do goleiro (movimento) e colisões dele com jogador e bola
-    goleiro.update(bola);
-    goleiro.resolverColisao(timeAliado[indiceJogador].x, timeAliado[indiceJogador].y, 0.2f);
-    goleiro.resolverColisao(bola.x, bola.y, 0.1f);
+    goleiroRival.update(bola);
+    goleiroRival.resolverColisao(timeAliado[indiceJogador].x, timeAliado[indiceJogador].y, 0.2f);
+    goleiroRival.resolverColisao(bola.x, bola.y, 0.1f);
+
+    goleiroAliado.update(bola);
+    goleiroAliado.resolverColisao(timeAliado[indiceJogador].x, timeAliado[indiceJogador].y, 0.2f);
+    goleiroAliado.resolverColisao(bola.x, bola.y, 0.1f);
 
     // i dispois resolve os gols por último
     gol.resolverColisao(timeAliado[indiceJogador].x, timeAliado[indiceJogador].y, 0.2f);
-    gol.resolverColisao(bola.x, bola.y, 0.1f);
+    
+    // verifica o tipo do gol (1 = brasil, 2 = alemanha)
+    int statusGol = gol.resolverColisao(bola.x, bola.y, 0.1f);
+    
+    if (statusGol == 1) {
+        scoreboard.scoreAliado();
+        bola.x = 0.0f;
+        bola.y = 0.0f;
+        bola.velX = 0.0f; 
+        bola.velY = 0.0f; 
+        bola.isHeld = false;
+    } else if (statusGol == 2) {
+        // se o status for 2 pontua para a alemanha
+        scoreboard.scoreRival();
+        bola.x = 0.0f;
+        bola.y = 0.0f;
+        bola.velX = 0.0f;
+        bola.velY = 0.0f;
+        bola.isHeld = false;
+    }
 
     input.wasJPressed = input.isJPressed;
     input.wasLPressed = input.isLPressed;

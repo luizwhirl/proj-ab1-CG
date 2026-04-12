@@ -21,10 +21,10 @@ public:
     Scoreboard();
     
     void draw(int winW, int winH);
-    void scoreBrazil();
+    void scoreAliado();
     
     // pontua rival (depouis eu tiroo esse nome maldito da alemanha)
-    void scoreGermany(); 
+    void scoreRival(); 
 };
 
 #endif

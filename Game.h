@@ -22,9 +22,9 @@ private:
     InputManager input;
     Bola bola;
     std::vector<Jogador> timeAliado{3};
-    Goleiro goleiro; // INCLUÍDO AQUI
-    Goleiro goleiroAlemanha; // di cima
-    Goleiro goleiroBrasil;   // di baxo
+    Goleiro goleiro;
+    Goleiro goleiroRival; // di cima
+    Goleiro goleiroAliado;   // di baxo
 
     static Game* instance;
 
