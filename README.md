@@ -1,6 +1,16 @@
 # Projeto AB1 Computação Gráfica: Futibas da resenha
 ---
 
+sem muito papinho, use o comando 
+```
+g++ *.cpp ./irrKlang/lib/Win32-gcc/libirrKlang.a -o main.exe -I./irrKlang/include -lopengl32 -lglu32 -lfreeglut
+```
+se quiser rodar com audio.
+Se garanta que ipkMP3.dll e irrKlang.dll (ambos em irrKlang\bin\win32-gcc\) estejam no mesmo diretório que main.exe.
+Ah indiano mas cade o readme bonitinho
+![eu](https://www.zapfigurinhas.com/img/webp/iTixSg2.webp)
+
+
 ## Estrutura de Diretórios e Arquivos
 
 O código atualmente tá dividido nos seguintes módulos principais:
