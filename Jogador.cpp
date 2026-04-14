@@ -3,11 +3,12 @@
 #include <utility>
 #include <iostream>
 
-Jogador::Jogador() {
-    x = 1.0f;
-    y = 1.0f;
+Jogador::Jogador(float startX, float startY) {
+    x = startX;
+    y = startY;
+    baseX = startX;
+    baseY = startY;
 }
-
 // pede pra classe de animacao carregar todas as texturas
 void Jogador::loadTexture() {
     animacao.loadTextures();
@@ -21,5 +22,5 @@ void Jogador::setAndando(bool andando) {
 // da a luz ao jogador
 void Jogador::draw() {
     // tamo passano lastDirection pra animação saber pra onde oliar
-    animacao.draw(x, y, lastDirection);
+    animacao.draw(this->x, this->y, lastDirection);
 }

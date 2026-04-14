@@ -21,7 +21,8 @@ private:
     Scoreboard scoreboard;
     InputManager input;
     Bola bola;
-    std::vector<Jogador> timeAliado{3};
+    std::vector<Jogador> timeAliado;
+    std::vector<Jogador> timeRival;
     Goleiro goleiro;
     Goleiro goleiroRival; // di cima
     Goleiro goleiroAliado;   // di baxo

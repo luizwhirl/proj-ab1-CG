@@ -9,12 +9,14 @@ public:
     float x;
     float y;
     char lastDirection = 'W';
+    float baseX;
+    float baseY;
     
     // objeto de animacao ablablabla
     AnimacaoJogador animacao; 
 
     // corinthians é gigante
-    Jogador(); 
+    Jogador(float startX, float startY); 
 
     // da a luz ao jogador
     void draw();

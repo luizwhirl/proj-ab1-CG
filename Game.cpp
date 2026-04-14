@@ -12,6 +12,23 @@ Game::Game() {
     winW = 600;
     winH = 800;
 
+    // define a posicao dos jogadores em uma formacao 4-4-2 (a melhor digasssi di passagi)
+    std::vector<std::pair<float, float>> posicoes442 = {
+    {-1.0f, -0.5f}, {1.0f, -0.5f},                                // Ataque
+    {-2.0f, -1.5f}, {-0.8f, -2.0f}, {0.8f, -2.0f}, {2.0f, -1.5f}, // Meio  
+    {-2.0f, -3.5f}, {-0.8f, -4.0f}, {0.8f, -4.0f}, {2.0f, -3.5f}, // Defesa          
+    };
+
+    // printa o time rival
+    for (int i = 0; i < 10; i++) {
+        timeRival.push_back(Jogador(posicoes442[i].first * -1.0f, posicoes442[i].second * -1.0f));
+    }
+
+    // printa o time aliado
+    for (int i = 0; i < 10; i++) {
+        timeAliado.push_back(Jogador(posicoes442[i].first, posicoes442[i].second));
+    }
+
     // inicialização dos dois goleiros, definindo suas posições no eixo Y e passando true/false para a tag isTop
     goleiroRival = Goleiro(0.0f, 4.5f, 0.015f, -1.5f, 1.5f, true);
     goleiroAliado = Goleiro(0.0f, -4.5f, 0.015f, -1.5f, 1.5f, false);
@@ -87,10 +104,15 @@ void Game::display() {
 
     campo.draw();
 
-    // jogador e bola vêm primeiro
+    // jogadores e bola vêm primeiro
+    for (int x=0; x<timeAliado.size(); x++){
+        timeRival[x].draw();
+    }
+    
     for (int x=0; x<timeAliado.size(); x++){
         timeAliado[x].draw();
     }
+
     bola.draw();
     
     // desenha o goleiro
