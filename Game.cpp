@@ -1,4 +1,5 @@
 #include "Game.h"
+#include "SoundManager.h"
 #include <GL/glut.h>
 #include <cstdlib> // rand() e srand()
 #include <ctime>   // time()
@@ -45,6 +46,10 @@ void Game::init() {
         // o loadtexture vai chamar ela dispois
         timeAliado[x].loadTexture();
     }
+
+    // inicializa o gerenciador de som e toca o apito do arbritro tome
+    SoundManager::getInstance()->init();
+    SoundManager::getInstance()->playApito();
 }
 
 void Game::setupCamera() {
@@ -257,6 +262,9 @@ void Game::updatePlayer() {
         float vectorX = (timeAliado[maisProx].x - timeAliado[indiceJogador].x)/menorDist;
         float vectorY = (timeAliado[maisProx].y - timeAliado[indiceJogador].y)/menorDist;
 
+        // executa os sons de passe
+        SoundManager::getInstance()->playChute();
+
         // calcula a velocidade da bola
         float velBola = menorDist * 0.02f;
 
@@ -273,6 +281,10 @@ void Game::updatePlayer() {
     // dá o chutão 
     // verifica !input.wasKPressed para o jogador que receber a bola não chutar imediatamente de volta
     if (input.isKPressed && !input.wasKPressed && bola.isHeld) {
+        
+        // som chute
+        SoundManager::getInstance()->playChute();
+
         switch (timeAliado[indiceJogador].lastDirection) {
             case 'W': bola.velY += 0.05f; break;
             case 'A': bola.velX -= 0.05f; break;
@@ -352,6 +364,10 @@ void Game::updatePlayer() {
     
     if (statusGol == 1) {
         scoreboard.scoreAliado();
+        
+        // NOVO: Toca o som de comemoração quando o gol é feito
+        SoundManager::getInstance()->playGol();
+
         bola.x = 0.0f;
         bola.y = 0.0f;
         bola.velX = 0.0f; 
@@ -360,6 +376,10 @@ void Game::updatePlayer() {
     } else if (statusGol == 2) {
         // se o status for 2 pontua para a alemanha
         scoreboard.scoreRival();
+        
+        // NOVO: Toca o som de comemoração quando o gol é feito
+        SoundManager::getInstance()->playGol();
+
         bola.x = 0.0f;
         bola.y = 0.0f;
         bola.velX = 0.0f;
@@ -377,7 +397,6 @@ void Game::updatePlayer() {
 
     glutPostRedisplay();
 }
-
 
 // esses callbacks estáticos sao p/ conectar o c++ ao glut ne duuughhhh 
 void Game::displayCallback() { Game::getInstance()->display(); }
