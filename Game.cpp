@@ -166,21 +166,22 @@ void Game::updatePlayer() {
     float dirY = 0;
 
     // verifica a tecla pressionada e salva a ultima posição
+    // o jogador só muda a direção pra qual está olhando se tiver a bola
     if (input.isWPressed) { 
         dirY += 1; 
-        timeAliado[indiceJogador].lastDirection = 'W'; 
+        if (bola.isHeld) timeAliado[indiceJogador].lastDirection = 'W'; 
     }
     if (input.isSPressed) { 
         dirY -= 1; 
-        timeAliado[indiceJogador].lastDirection = 'S'; 
+        if (bola.isHeld) timeAliado[indiceJogador].lastDirection = 'S'; 
     }
     if (input.isDPressed) { 
         dirX += 1; 
-        timeAliado[indiceJogador].lastDirection = 'D'; 
+        if (bola.isHeld) timeAliado[indiceJogador].lastDirection = 'D'; 
     }
     if (input.isAPressed) { 
         dirX -= 1; 
-        timeAliado[indiceJogador].lastDirection = 'A'; 
+        if (bola.isHeld) timeAliado[indiceJogador].lastDirection = 'A'; 
     }
 
     // normaliza vetor (eu deveria ter prestado atenção na aula)
@@ -201,24 +202,33 @@ void Game::updatePlayer() {
         timeAliado[x].setAndando(false);
     }
     
-    // atualizao estado da animação do jogador atual com base no movimento
-    timeAliado[indiceJogador].setAndando(isMoving);
+    // o jogador so anda e atualiza sua animação de movimento se estiver com a bola
+    if (bola.isHeld) {
+        // atualizao estado da animação do jogador atual com base no movimento
+        timeAliado[indiceJogador].setAndando(isMoving);
 
-    // faz o jogador correr
-    float velocidadeJogador = 0.01f; 
-    timeAliado[indiceJogador].x += dirX * velocidadeJogador;
-    timeAliado[indiceJogador].y += dirY * velocidadeJogador;
+        // faz o jogador correr
+        float velocidadeJogador = 0.01f; 
+        timeAliado[indiceJogador].x += dirX * velocidadeJogador;
+        timeAliado[indiceJogador].y += dirY * velocidadeJogador;
+    }
 
     // pega a bola se chegar perto
     if (!bola.isHeld) {
-        float distance = pitagoras(
-            bola.x - timeAliado[indiceJogador].x, 
-            bola.y - timeAliado[indiceJogador].y
-        );
-        if (distance < 0.4 && bola.framesIntocavel == 0) {
-            bola.velX = 0;
-            bola.velY = 0;
-            bola.isHeld = true;
+        // verifica TODOS os jogadores do time aliado, não apenas o atual
+        for (int i = 0; i < timeAliado.size(); i++) {
+            float distance = pitagoras(
+                bola.x - timeAliado[i].x, 
+                bola.y - timeAliado[i].y
+            );
+            // se algum jogador esbarrar na bola, ele a pega e vira o jogador controlado
+            if (distance < 0.4 && bola.framesIntocavel == 0) {
+                bola.velX = 0;
+                bola.velY = 0;
+                bola.isHeld = true;
+                indiceJogador = i; 
+                break; // achou um: não precisa continuar checando
+            }
         }
     }
 
@@ -261,7 +271,8 @@ void Game::updatePlayer() {
     }
 
     // dá o chutão 
-    if (input.isKPressed && bola.isHeld) {
+    // verifica !input.wasKPressed para o jogador que receber a bola não chutar imediatamente de volta
+    if (input.isKPressed && !input.wasKPressed && bola.isHeld) {
         switch (timeAliado[indiceJogador].lastDirection) {
             case 'W': bola.velY += 0.05f; break;
             case 'A': bola.velX -= 0.05f; break;
@@ -269,6 +280,8 @@ void Game::updatePlayer() {
             case 'D': bola.velX += 0.05f; break;
         }
         bola.isHeld = false;
+        // deixa a bola intocável por alguns frames após o chute também, para desgrudar do pé
+        bola.framesIntocavel = 10;
     }
 
     // troca de jogador
@@ -309,6 +322,12 @@ void Game::updatePlayer() {
         // bola vai freiando na grama (papo de fisica)
         bola.velX *= 0.98f;
         bola.velY *= 0.98f;
+        
+        // faz a bola ser controlada por conta própria quando solta
+        // usamos o mesmo direcional de input (wasd) convertido em dirX/dirY
+        float velocidadeBolaViva = 0.01f;
+        bola.x += dirX * velocidadeBolaViva;
+        bola.y += dirY * velocidadeBolaViva;
     }
 
     // resolvendo as colisões DEPOIS do update de teclas
@@ -350,6 +369,7 @@ void Game::updatePlayer() {
 
     input.wasJPressed = input.isJPressed;
     input.wasLPressed = input.isLPressed;
+    input.wasKPressed = input.isKPressed;
 
     if (bola.framesIntocavel > 0){
         bola.framesIntocavel--;
