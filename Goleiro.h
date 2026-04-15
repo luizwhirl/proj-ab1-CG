@@ -2,6 +2,7 @@
 #define GOLEIRO_H
 
 #include "Bola.h"
+#include "AnimacaoGoleiro.h"
 
 class Goleiro {
 public:
@@ -25,9 +26,14 @@ public:
     
     bool isTop; // essa praguinha define se é o goleiro de cima (alemanha buuu) ou baixo (brasil ihaaa)
 
+    // instância da classe de animação
+    AnimacaoGoleiro animacao; 
+    
     Goleiro();
     // pro construtor saber o lado dele - recebe isTopGoleiro
     Goleiro(float startX, float startY, float v, float lEsq, float lDir, bool isTopGoleiro);
+
+    void loadTexture(); // cha ma para carregar as texturas
 
     void draw();
     void update(const Bola& bola);

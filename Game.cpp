@@ -48,6 +48,8 @@ void Game::init() {
         // o loadtexture vai chamar ela dispois
         timeAliado[x].loadTexture();
     }
+    goleiroRival.loadTexture();
+    goleiroAliado.loadTexture();
 }
 
 void Game::setupCamera() {

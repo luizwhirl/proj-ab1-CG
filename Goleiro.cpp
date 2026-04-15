@@ -49,7 +49,14 @@ Goleiro::Goleiro(float startX, float startY, float v, float lEsq, float lDir, bo
     isTop = isTopGoleiro; // gravah de qual lado o goleiro é
 }
 
+// pass o pedido de carregamento pra classe de animação
+void Goleiro::loadTexture() {
+    animacao.loadTextures(isTop);
+}
+
 void Goleiro::draw() {
+
+    /*
     glPushMatrix();
     glTranslatef(x, y, 0.0f);
 
@@ -67,6 +74,10 @@ void Goleiro::draw() {
     glEnd();
 
     glPopMatrix();
+    */
+
+    // chama o draw da textura animada
+    animacao.draw(x, y, largura, altura);
 }
 
 void Goleiro::update(const Bola& bola) {
@@ -81,9 +92,9 @@ void Goleiro::update(const Bola& bola) {
     if (tempoAtual - ultimoTempoAtualizacao > atrasoEfetivo) {
 
         // a verificacao se a bola está no campo do goleiro depende se ele é o de cima (y<0 está longe) ou baixo (y>0 está longe)
-        bool bolaLonge = isTop ? (bola.y < 0.0f) : (bola.y > 0.0f); // ADICIONADO
+        bool bolaLonge = isTop ? (bola.y < 0.0f) : (bola.y > 0.0f);
         
-        if (bolaLonge) { // ALTERADO: Substitui o 'if (bola.y < 0.0f)' genérico
+        if (bolaLonge) { 
             // patrulha-> movimento mais oscilatório ao invés de pular di la prah ca
             // a cada 1.5-2.5 segundos
             if (tempoAtual - tempoDirecao > 1500 + rand() % 1000) {
@@ -135,6 +146,13 @@ void Goleiro::update(const Bola& bola) {
     // limites do caba
     if (x < limiteEsq) { x = limiteEsq; velocidadeAtual = 0.0f; }
     if (x > limiteDir) { x = limiteDir; velocidadeAtual = 0.0f; }
+
+    // verifica se o goleiro ta se movendo para ativar a animação
+    if (std::abs(velocidadeAtual) > 0.001f) {
+        animacao.setWalking(true);
+    } else {
+        animacao.setWalking(false);
+    }
 }
 
 void Goleiro::resolverColisao(float& objX, float& objY, float objRaio) {
