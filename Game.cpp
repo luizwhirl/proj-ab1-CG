@@ -65,6 +65,9 @@ void Game::init() {
                                     "assets/sprites/arquibancada/ArquibancadaC.png", 
                                     "assets/sprites/arquibancada/ArquibancadaD.png");
     
+    // carrega os sprites de animacao da bola junto com os carregamentos do jogo
+    bola.loadTextures();
+
     for (int x=0; x<timeAliado.size(); x++){
         // classe AnimacaoJogador carrega todos os sprites do jogador internamente
         // o loadtexture vai chamar ela dispois
