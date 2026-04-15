@@ -138,6 +138,9 @@ void Game::display() {
     // os gols sao desenhados POR ÚLTIMO pra rede e o topo aparecerem ACIMA deles visualmente
     gol.draw();
 
+    // chama o desenho do item caso esteja em campo
+    powerUp.draw(); 
+
     scoreboard.draw(winW, winH);
 
     glutSwapBuffers();
@@ -291,9 +294,16 @@ for (int i = 0; i < timeRival.size(); i++) {
         float distPraBola = pitagoras(bola.x - timeRival[i].x, bola.y - timeRival[i].y);
         // chegou perto rouba a bola
         if (distPraBola < 0.4f) {
-            bola.statusPosse = 2; 
-            bola.idRival = i;
-            cliquesParaSoltar = 0;
+            
+            // if -> aliado tá invencivel (azul) e tem a posse
+            if (tempoInvincibilidade > 0 && bola.statusPosse == 1) {
+                // não rouba, a invencibilidade não permite
+            } else {
+                bola.statusPosse = 2; 
+                bola.idRival = i;
+                cliquesParaSoltar = 0;
+            }
+
         } 
         // Se ainda tá longe, mas tá no campo de visão , persegue a bola
         else if (distPraBola < 2.0f) {
@@ -347,6 +357,29 @@ for (int i = 0; i < timeRival.size(); i++) {
 
 // Atualiza a posição do jogador e da bola
 void Game::updatePlayer() {
+    // contagem e respawn do power Up
+    if (tempoSpeedBoost > 0) tempoSpeedBoost--;
+    if (tempoInvincibilidade > 0) tempoInvincibilidade--;
+
+    if (!powerUp.active) {
+        spawnTimer++;
+        if (spawnTimer >= 300) { // depois de aprox 5s spawna oto
+            powerUp.spawn();
+            spawnTimer = 0;
+        }
+    } else {
+        // Checa se o aliado controlado colidiu com o powerup
+        if (powerUp.checkCollision(timeAliado[indiceJogador].x, timeAliado[indiceJogador].y)) {
+            if (powerUp.type == 1) {
+                tempoSpeedBoost = 2400; // 10 segundos a 60 fps (40s - 2400)
+            } else if (powerUp.type == 2) {
+                tempoInvincibilidade = 2400; // 10 segundos a 60 fps (tambem)
+            }
+            powerUp.active = false;
+        }
+    }
+
+
     float dirX = 0;
     float dirY = 0;
 
@@ -402,7 +435,8 @@ void Game::updatePlayer() {
         timeAliado[indiceJogador].setAndando(isMoving);
 
         // faz o jogador correr
-        float velocidadeJogador = 0.01f; 
+        // aplica a nova velocidade drobada caso o speed boost esteja on 
+        float velocidadeJogador = (tempoSpeedBoost > 0) ? 0.02f : 0.01f; 
         timeAliado[indiceJogador].x += dirX * velocidadeJogador;
         timeAliado[indiceJogador].y += dirY * velocidadeJogador;
     }
@@ -548,6 +582,13 @@ void Game::updatePlayer() {
     int statusGol = gol.resolverColisao(bola.x, bola.y, 0.1f);
     
     if (statusGol == 1) {
+        
+        // limpa os power up no reset do gol
+        powerUp.active = false;
+        spawnTimer = 0;
+        tempoSpeedBoost = 0;
+        tempoInvincibilidade = 0;
+
         scoreboard.scoreAliado();
         bola.x = 0.0f;
         bola.y = 0.0f;
@@ -571,6 +612,13 @@ void Game::updatePlayer() {
         }
         indiceJogador = 0;
     } else if (statusGol == 2) {
+
+        // limpa os power up no reset do gol tome eeita demaisssss
+        powerUp.active = false;
+        spawnTimer = 0;
+        tempoSpeedBoost = 0;
+        tempoInvincibilidade = 0;
+
         // se o status for 2 pontua para a alemanha
         scoreboard.scoreRival();
         bola.x = 0.0f;

@@ -9,6 +9,7 @@
 #include "Bola.h"
 #include "Jogador.h"
 #include "Goleiro.h"
+#include "PowerUp.h" 
 
 // Scene / Game State e Window / Context Manager
 class Game {
@@ -28,6 +29,12 @@ private:
     Goleiro goleiro;
     Goleiro goleiroRival; // di cima
     Goleiro goleiroAliado;   // di baxo
+    
+    // variáveis de controle para o sistema de poderzinho
+    PowerUp powerUp;
+    int tempoSpeedBoost = 0;
+    int tempoInvincibilidade = 0;
+    int spawnTimer = 0;
 
     static Game* instance;
 
