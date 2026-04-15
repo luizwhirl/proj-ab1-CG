@@ -41,17 +41,17 @@ void AnimacaoJogador::loadTextures(bool isRival) {
         textureSideWalk2 = loadTextureSingle("assets/sprites/rival/loiro-ladoAnda2.png");
     } else {
         // sprites dos aliado
-        textureIdle = loadTextureSingle("assets/sprites/frente.png");
-        textureWalk1 = loadTextureSingle("assets/sprites/frente-anda.png");
-        textureWalk2 = loadTextureSingle("assets/sprites/frente-anda2.png");
+        textureIdle = loadTextureSingle("assets/sprites/chiquinho/frente.png");
+        textureWalk1 = loadTextureSingle("assets/sprites/chiquinho/frente-anda.png");
+        textureWalk2 = loadTextureSingle("assets/sprites/chiquinho/frente-anda2.png");
         
-        textureBackIdle = loadTextureSingle("assets/sprites/costa.png");
-        textureBackWalk1 = loadTextureSingle("assets/sprites/costa-anda.png");
-        textureBackWalk2 = loadTextureSingle("assets/sprites/costa-anda2.png");
+        textureBackIdle = loadTextureSingle("assets/sprites/chiquinho/costa.png");
+        textureBackWalk1 = loadTextureSingle("assets/sprites/chiquinho/costa-anda.png");
+        textureBackWalk2 = loadTextureSingle("assets/sprites/chiquinho/costa-anda2.png");
         
-        textureSideIdle = loadTextureSingle("assets/sprites/lado.png");
-        textureSideWalk1 = loadTextureSingle("assets/sprites/lado-anda.png");
-        textureSideWalk2 = loadTextureSingle("assets/sprites/lado-anda2.png");
+        textureSideIdle = loadTextureSingle("assets/sprites/chiquinho/lado.png");
+        textureSideWalk1 = loadTextureSingle("assets/sprites/chiquinho/lado-anda.png");
+        textureSideWalk2 = loadTextureSingle("assets/sprites/chiquinho/lado-anda2.png");
     }
 }
 

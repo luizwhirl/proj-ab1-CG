@@ -5,7 +5,6 @@ class Bola {
 public:
     float x;
     float y;
-    bool isHeld = false;
     int statusPosse = 0; // 0 -> livre / 1 -> time aliado / 2-> time rival
     int idRival = -1;
 
