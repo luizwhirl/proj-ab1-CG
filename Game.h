@@ -17,6 +17,7 @@ private:
     int indiceJogador = 0;
     int cliquesParaSoltar = 0;
     bool jogoIniciado = false;
+    int cooldownPasseRival = 0;
 
     Campo campo;
     Gol gol;
@@ -45,6 +46,7 @@ public:
     void keyboardUp(unsigned char key, int x, int y);
     void updatePlayer();
     void atualizarIARival();
+    void atualizarIATime();
     float pitagoras(float, float);
 
     // resolve a colisão física/sobreposição entre todos os jogadores em campo

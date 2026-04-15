@@ -4,9 +4,120 @@
 #include <ctime>   // time()
 #include <stack>
 #include <iostream>
-#include <cmath> 
+#include <cmath>
+#include <algorithm>  
 
 Game* Game::instance = nullptr;
+
+namespace {
+float clampValor(float valor, float minimo, float maximo) {
+    return std::max(minimo, std::min(valor, maximo));
+}
+
+void moverJogadorPara(Jogador& jogador, float alvoX, float alvoY, float velocidade, float tolerancia = 0.05f) {
+    float dirX = alvoX - jogador.x;
+    float dirY = alvoY - jogador.y;
+    float distancia = std::sqrt((dirX * dirX) + (dirY * dirY));
+
+    if (distancia <= tolerancia || distancia <= 0.0001f) {
+        return;
+    }
+
+    float passo = std::min(velocidade, distancia - tolerancia);
+    jogador.x += (dirX / distancia) * passo;
+    jogador.y += (dirY / distancia) * passo;
+}
+
+void atualizarDirecaoEAnimacao(Jogador& jogador, float oldX, float oldY) {
+    float diffX = jogador.x - oldX;
+    float diffY = jogador.y - oldY;
+
+    if (std::abs(diffX) > 0.0001f || std::abs(diffY) > 0.0001f) {
+        jogador.setAndando(true);
+        if (std::abs(diffX) > std::abs(diffY)) {
+            jogador.lastDirection = (diffX > 0.0f) ? 'D' : 'A';
+        } else {
+            jogador.lastDirection = (diffY > 0.0f) ? 'W' : 'S';
+        }
+    } else {
+        jogador.setAndando(false);
+    }
+}
+
+float distanciaMaisProxima(const Jogador& referencia, const std::vector<Jogador>& adversarios) {
+    float menorDistancia = 1000000.0f;
+
+    for (const Jogador& adversario : adversarios) {
+        float dx = referencia.x - adversario.x;
+        float dy = referencia.y - adversario.y;
+        float distancia = std::sqrt((dx * dx) + (dy * dy));
+        menorDistancia = std::min(menorDistancia, distancia);
+    }
+
+    return menorDistancia;
+}
+
+int escolherMelhorPasseRival(const std::vector<Jogador>& rivais, const std::vector<Jogador>& aliados, int portador) {
+    int melhorOpcao = -1;
+    float melhorScore = -1000000.0f;
+
+    for (int i = 0; i < static_cast<int>(rivais.size()); i++) {
+        if (i == portador) {
+            continue;
+        }
+
+        float dx = rivais[i].x - rivais[portador].x;
+        float dy = rivais[i].y - rivais[portador].y;
+        float distancia = std::sqrt((dx * dx) + (dy * dy));
+
+        if (distancia < 0.8f || distancia > 3.2f) {
+            continue;
+        }
+
+        if (rivais[i].y >= rivais[portador].y - 0.15f) {
+            continue;
+        }
+
+        float coberturaAliada = distanciaMaisProxima(rivais[i], aliados);
+        float progressoAoGol = rivais[portador].y - rivais[i].y;
+        float score = (progressoAoGol * 1.8f) + (coberturaAliada * 0.9f) - (distancia * 0.35f) - (std::abs(rivais[i].x) * 0.15f);
+
+        if (score > melhorScore) {
+            melhorScore = score;
+            melhorOpcao = i;
+        }
+    }
+
+    return melhorOpcao;
+}
+
+void selecionarPerseguidores(const std::vector<Jogador>& time, const Bola& bola, int ignorarIndex, int& maisProximo, int& segundoMaisProximo) {
+    float menorDistancia = 1000000.0f;
+    float segundaMenorDistancia = 1000000.0f;
+    maisProximo = -1;
+    segundoMaisProximo = -1;
+
+    for (int i = 0; i < static_cast<int>(time.size()); i++) {
+        if (i == ignorarIndex) {
+            continue;
+        }
+
+        float dx = bola.x - time[i].x;
+        float dy = bola.y - time[i].y;
+        float distancia = std::sqrt((dx * dx) + (dy * dy));
+
+        if (distancia < menorDistancia) {
+            segundaMenorDistancia = menorDistancia;
+            segundoMaisProximo = maisProximo;
+            menorDistancia = distancia;
+            maisProximo = i;
+        } else if (distancia < segundaMenorDistancia) {
+            segundaMenorDistancia = distancia;
+            segundoMaisProximo = i;
+        }
+    }
+}
+}
 
 Game::Game() {
     winW = 600;
@@ -244,106 +355,153 @@ void Game::resolverColisoesJogadores() {
 }
 
 void Game::atualizarIARival(){
-   if (bola.statusPosse == 2 && cliquesParaSoltar >= 5) {
-    bola.statusPosse = 0; // bola fica livre
-    bola.velY = 0.05f; // afasta a bola um pouquinho do rival
-    bola.framesIntocavel = 30; 
-    cliquesParaSoltar = 0; 
-}
+    if (bola.statusPosse == 2 && cliquesParaSoltar >= 5) {
+        bola.statusPosse = 0;
+        bola.idRival = -1;
+        bola.velX = 0.0f;
+        bola.velY = 0.05f;
+        bola.framesIntocavel = 30;
+        cooldownPasseRival = 20;
+        cliquesParaSoltar = 0;
+    }
 
-//  IA do time rival (botei 10 macacos pra controlar o time)
+    int rivalMaisProximo = -1;
+    int segundoRivalMaisProximo = -1;
+    selecionarPerseguidores(timeRival, bola, -1, rivalMaisProximo, segundoRivalMaisProximo);
 
-for (int i = 0; i < timeRival.size(); i++) {
-    
-    // guarda a posicao anterior para saber pra onde o macaco vai andar
-    float oldX = timeRival[i].x;
-    float oldY = timeRival[i].y;
+    for (int i = 0; i < static_cast<int>(timeRival.size()); i++) {
+        float oldX = timeRival[i].x;
+        float oldY = timeRival[i].y;
 
-    // se o rival está com a bola ele ataca
-    if (bola.statusPosse == 2 && bola.idRival == i) {
-        
-        // ataca para o gol debaixo
-        float dirX = 0.0f - timeRival[i].x;
-        float dirY = -4.5f - timeRival[i].y;
-        float distProGol = pitagoras(dirX, dirY);
+        if (bola.statusPosse == 2 && bola.idRival == i) {
+            float dirGolX = 0.0f - timeRival[i].x;
+            float dirGolY = -4.5f - timeRival[i].y;
+            float distProGol = pitagoras(dirGolX, dirGolY);
 
-        if (distProGol > 0) {
-            // rival corre pro gol
-            timeRival[i].x += (dirX / distProGol) * 0.002f; 
-            timeRival[i].y += (dirY / distProGol) * 0.002f;
-        }
+            if (cooldownPasseRival == 0) {
+                int melhorPasse = escolherMelhorPasseRival(timeRival, timeAliado, i);
+                float pressaoMaisProxima = distanciaMaisProxima(timeRival[i], timeAliado);
+                bool estaPressionado = pressaoMaisProxima < 0.9f;
+                bool travadoNaLateral = std::abs(timeRival[i].x) > 2.2f;
 
-        // A bola gruda no pé dele
-        bola.x = timeRival[i].x;
-        bola.y = timeRival[i].y - 0.4f; 
+                if (melhorPasse != -1 && (estaPressionado || travadoNaLateral)) {
+                    float passeX = timeRival[melhorPasse].x - timeRival[i].x;
+                    float passeY = timeRival[melhorPasse].y - timeRival[i].y;
+                    float distPasse = pitagoras(passeX, passeY);
 
-        // chegou na área, daqui é caixa
-        if (distProGol < 1.5f) {
-            bola.statusPosse = 0;
-            bola.velY = -0.05f;
-        }
-    } 
+                    if (distPasse > 0.0001f) {
+                        float vetorPasseX = passeX / distPasse;
+                        float vetorPasseY = passeY / distPasse;
+                        float velPasse = clampValor(distPasse * 0.018f, 0.035f, 0.06f);
 
-    
-
-    // se a bola está livre ou com o jogador eles tenteam roubar
-    else if ((bola.statusPosse == 0 || bola.statusPosse == 1) && bola.framesIntocavel == 0) {
-        float distPraBola = pitagoras(bola.x - timeRival[i].x, bola.y - timeRival[i].y);
-        // chegou perto rouba a bola
-        if (distPraBola < 0.4f) {
-            bola.statusPosse = 2; 
-            bola.idRival = i;
-            cliquesParaSoltar = 0;
-        } 
-        // Se ainda tá longe, mas tá no campo de visão , persegue a bola
-        else if (distPraBola < 2.0f) {
-            float dirX = bola.x - timeRival[i].x;
-            float dirY = bola.y - timeRival[i].y;
-            timeRival[i].x += (dirX / distPraBola) * 0.0009f; 
-            timeRival[i].y += (dirY / distPraBola) * 0.0009f;
-        }
-        else {
-            float dirXBase = timeRival[i].baseX - timeRival[i].x;
-            float dirYBase = timeRival[i].baseY - timeRival[i].y;
-            float distPraBase = pitagoras(dirXBase, dirYBase);
-            
-            if (distPraBase > 0.05f) {
-                timeRival[i].x += (dirXBase / distPraBase) * 0.004f; 
-                timeRival[i].y += (dirYBase / distPraBase) * 0.004f;
+                        bola.statusPosse = 0;
+                        bola.idRival = -1;
+                        bola.framesIntocavel = 18;
+                        bola.x = timeRival[i].x + vetorPasseX * 0.35f;
+                        bola.y = timeRival[i].y + vetorPasseY * 0.35f;
+                        bola.velX = vetorPasseX * velPasse;
+                        bola.velY = vetorPasseY * velPasse;
+                        cooldownPasseRival = 45;
+                    }
+                }
             }
-        }
-    }
 
-    else{
-        float dirXBase = timeRival[i].baseX - timeRival[i].x;
-        float dirYBase = timeRival[i].baseY - timeRival[i].y;
-        float distPraBase = pitagoras(dirXBase, dirYBase);
-        
-        if (distPraBase > 0.05f) {
-            timeRival[i].x += (dirXBase / distPraBase) * 0.004f; 
-            timeRival[i].y += (dirYBase / distPraBase) * 0.004f;
-        }
-    }
-    
-    // verifica diferenca de posicao para virar o sprite na direcao correta
-    float diffX = timeRival[i].x - oldX;
-    float diffY = timeRival[i].y - oldY;
+            if (bola.statusPosse == 2 && bola.idRival == i) {
+                if (distProGol > 1.35f) {
+                    moverJogadorPara(timeRival[i], 0.0f, -4.5f, 0.0028f, 0.15f);
+                    bola.x = timeRival[i].x;
+                    bola.y = timeRival[i].y - 0.4f;
+                } else {
+                    bola.statusPosse = 0;
+                    bola.idRival = -1;
+                    bola.framesIntocavel = 12;
+                    bola.x = timeRival[i].x;
+                    bola.y = timeRival[i].y - 0.4f;
+                    bola.velX = clampValor(-timeRival[i].x * 0.01f, -0.02f, 0.02f);
+                    bola.velY = -0.05f;
+                    cooldownPasseRival = 20;
+                }
+            }
+        } else if (bola.statusPosse == 2 && bola.idRival >= 0 && bola.idRival < static_cast<int>(timeRival.size())) {
+            float avancoTime = clampValor((timeRival[bola.idRival].baseY - timeRival[bola.idRival].y) * 0.45f, 0.0f, 1.2f);
+            float alvoX = timeRival[i].baseX + clampValor((timeRival[bola.idRival].x - timeRival[i].baseX) * 0.35f, -0.9f, 0.9f);
+            float alvoY = timeRival[i].baseY - avancoTime;
+            moverJogadorPara(timeRival[i], alvoX, alvoY, 0.0022f);
+            
+        } else if ((bola.statusPosse == 0 || bola.statusPosse == 1) && bola.framesIntocavel == 0) {
+            float distPraBola = pitagoras(bola.x - timeRival[i].x, bola.y - timeRival[i].y);
+            bool devePressionar = (i == rivalMaisProximo || i == segundoRivalMaisProximo) && distPraBola < 3.5f;
 
-    if (std::abs(diffX) > 0.0001f || std::abs(diffY) > 0.0001f) {
-        timeRival[i].setAndando(true);
-        // atializa direcao baseado na maior diferenca de eixo percorrida
-        if (std::abs(diffX) > std::abs(diffY)) {
-            if (diffX > 0) timeRival[i].lastDirection = 'D';
-            else timeRival[i].lastDirection = 'A';
+            if (distPraBola < 0.4f) {
+                bola.statusPosse = 2;
+                bola.idRival = i;
+                bola.velX = 0.0f;
+                bola.velY = 0.0f;
+                cliquesParaSoltar = 0;
+                cooldownPasseRival = 20;
+            } else if (devePressionar || distPraBola < 1.2f) {
+                moverJogadorPara(timeRival[i], bola.x, bola.y, 0.0030f, 0.08f);
+            } else {
+                float alvoX = timeRival[i].baseX + clampValor((bola.x - timeRival[i].baseX) * 0.18f, -0.5f, 0.5f);
+                float alvoY = timeRival[i].baseY + clampValor((bola.y - timeRival[i].baseY) * 0.08f, -0.35f, 0.2f);
+                moverJogadorPara(timeRival[i], alvoX, alvoY, 0.0025f);
+            }
         } else {
-            if (diffY > 0) timeRival[i].lastDirection = 'W';
-            else timeRival[i].lastDirection = 'S';
+            moverJogadorPara(timeRival[i], timeRival[i].baseX, timeRival[i].baseY, 0.0025f);
         }
-    } else {
-        timeRival[i].setAndando(false);
+
+        atualizarDirecaoEAnimacao(timeRival[i], oldX, oldY);
+    }
+
+    if (cooldownPasseRival > 0) {
+        cooldownPasseRival--;
     }
 }
+
+void Game::atualizarIATime(){
+    int aliadoMaisProximo = -1;
+    int segundoAliadoMaisProximo = -1;
+    selecionarPerseguidores(timeAliado, bola, indiceJogador, aliadoMaisProximo, segundoAliadoMaisProximo);
+
+    for (int i = 0; i < static_cast<int>(timeAliado.size()); i++) {
+        if (i == indiceJogador) {
+            continue;
+        }
+
+        float oldX = timeAliado[i].x;
+        float oldY = timeAliado[i].y;
+
+        if (bola.statusPosse == 1) {
+            float avancoTime = clampValor((timeAliado[indiceJogador].y - timeAliado[indiceJogador].baseY) * 0.45f, 0.0f, 1.2f);
+            float alvoX = timeAliado[i].baseX + clampValor((timeAliado[indiceJogador].x - timeAliado[i].baseX) * 0.35f, -0.9f, 0.9f);
+            float alvoY = timeAliado[i].baseY + avancoTime;
+            moverJogadorPara(timeAliado[i], alvoX, alvoY, 0.0025f);
+        } else if ((bola.statusPosse == 0 || bola.statusPosse == 2) && bola.framesIntocavel == 0) {
+            float distPraBola = pitagoras(bola.x - timeAliado[i].x, bola.y - timeAliado[i].y);
+            bool devePressionar = (i == aliadoMaisProximo || i == segundoAliadoMaisProximo) && distPraBola < 3.5f;
+
+            if (distPraBola < 0.4f) {
+                bola.velX = 0.0f;
+                bola.velY = 0.0f;
+                bola.statusPosse = 1;
+                bola.idRival = -1;
+                indiceJogador = i;
+            } else if (devePressionar || distPraBola < 1.2f) {
+                moverJogadorPara(timeAliado[i], bola.x, bola.y, 0.0032f, 0.08f);
+            } else {
+                float alvoX = timeAliado[i].baseX + clampValor((bola.x - timeAliado[i].baseX) * 0.18f, -0.5f, 0.5f);
+                float alvoY = timeAliado[i].baseY + clampValor((bola.y - timeAliado[i].baseY) * 0.10f, -0.2f, 0.35f);
+                moverJogadorPara(timeAliado[i], alvoX, alvoY, 0.0025f);
+            }
+        } else {
+            moverJogadorPara(timeAliado[i], timeAliado[i].baseX, timeAliado[i].baseY, 0.0025f);
+        }
+
+        atualizarDirecaoEAnimacao(timeAliado[i], oldX, oldY);
+    }
 }
+
+
 
 // Atualiza a posição do jogador e da bola
 void Game::updatePlayer() {
@@ -388,13 +546,12 @@ void Game::updatePlayer() {
 
     if (jogoIniciado == true) {
         atualizarIARival();
+        atualizarIATime();
     }
 
     // grante que os outros jogadores do time que não estão 
     // sendo controlados parem a animação
-    for (int x = 0; x < timeAliado.size(); x++) {
-        timeAliado[x].setAndando(false);
-    }
+    timeAliado[indiceJogador].setAndando(false);
     
     // o jogador so anda e atualiza sua animação de movimento se estiver com a bola
     if (bola.statusPosse == 1) {
@@ -420,6 +577,7 @@ void Game::updatePlayer() {
                 bola.velX = 0;
                 bola.velY = 0;
                 bola.statusPosse = 1;
+                bola.idRival = -1;
                 indiceJogador = i; 
                 break; // achou um: não precisa continuar checando
             }
@@ -458,15 +616,20 @@ void Game::updatePlayer() {
             velBola = 0.04f;
         }
         // o chute é ajustado de acordo com a distância
-        bola.velX += vectorX * (velBola);
-        bola.velY += vectorY * (velBola);
+        bola.x = timeAliado[indiceJogador].x + vectorX * 0.35f;
+        bola.y = timeAliado[indiceJogador].y + vectorY * 0.35f;
+        bola.velX = vectorX * (velBola);
+        bola.velY = vectorY * (velBola);
         bola.statusPosse = 0;
+        bola.idRival = -1;
         indiceJogador = maisProx;
     }
 
     // dá o chutão 
     // verifica !input.wasKPressed para o jogador que receber a bola não chutar imediatamente de volta neh pai
     if (input.isKPressed && !input.wasKPressed && bola.statusPosse == 1) {
+        bola.velX = 0.0f;
+        bola.velY = 0.0f;
         switch (timeAliado[indiceJogador].lastDirection) {
             case 'W': bola.velY += 0.05f; break;
             case 'A': bola.velX -= 0.05f; break;
@@ -474,6 +637,7 @@ void Game::updatePlayer() {
             case 'D': bola.velX += 0.05f; break;
         }
         bola.statusPosse = 0;
+        bola.idRival = -1;
         // deixa a bola intocável por alguns frames após o chute também, para desgrudar do pé
         bola.framesIntocavel = 10;
     }
@@ -516,17 +680,16 @@ void Game::updatePlayer() {
         // bola vai freiando na grama (papo de fisica)
         bola.velX *= 0.98f;
         bola.velY *= 0.98f;
-        
-        // faz a bola ser controlada por conta própria quando tasolta
-        // usamos o mesmo direcional de input (wasd) convertido em dirX/dirY
-        float velocidadeBolaViva = 0.01f;
-        bola.x += dirX * velocidadeBolaViva;
-        bola.y += dirY * velocidadeBolaViva;
     }
 
     // resolvendo as colisões DEPOIS do update de teclas
     // primeiro os limites do campo para não deixar ngm sair
-    campo.resolverColisaoLimites(timeAliado[indiceJogador].x, timeAliado[indiceJogador].y, 0.2f);
+    for (int i = 0; i < static_cast<int>(timeAliado.size()); i++) {
+        campo.resolverColisaoLimites(timeAliado[i].x, timeAliado[i].y, 0.2f);
+    }
+    for (int i = 0; i < static_cast<int>(timeRival.size()); i++) {
+        campo.resolverColisaoLimites(timeRival[i].x, timeRival[i].y, 0.2f);
+    }
     campo.resolverColisaoLimites(bola.x, bola.y, 0.1f);
 
     // afasta os jogadores que estejam esbarrando ou se sobrepondo em campo
@@ -555,6 +718,9 @@ void Game::updatePlayer() {
         bola.velY = 0.0f;
         jogoIniciado = false; 
         bola.statusPosse = 0;
+        bola.idRival = -1;
+        cooldownPasseRival = 0;
+        cliquesParaSoltar = 0;
         for (int i = 0; i < timeRival.size(); i++) {
             timeRival[i].x = timeRival[i].baseX;
             timeRival[i].y = timeRival[i].baseY;
@@ -579,6 +745,9 @@ void Game::updatePlayer() {
         bola.velY = 0.0f;
         jogoIniciado = false;
         bola.statusPosse = 0;
+        bola.idRival = -1;
+        cooldownPasseRival = 0;
+        cliquesParaSoltar = 0;
         for (int i = 0; i < timeRival.size(); i++) {
             timeRival[i].x = timeRival[i].baseX;
             timeRival[i].y = timeRival[i].baseY;
