@@ -38,7 +38,10 @@ void Game::init() {
 
     // carreguemos as texturas aquiiis
     // passano os caminhos das bichas
-    campo.loadArquibancadaTextures("assets/sprites/arquibancadaA.png", "assets/sprites/ArquibancadaB.png", "assets/sprites/ArquibancadaC.png", "assets/sprites/ArquibancadaD.png");
+    campo.loadArquibancadaTextures("assets/sprites/arquibancada/arquibancadaA.png", 
+                                    "assets/sprites/arquibancada/ArquibancadaB.png", 
+                                    "assets/sprites/arquibancada/ArquibancadaC.png", 
+                                    "assets/sprites/arquibancada/ArquibancadaD.png");
     
     for (int x=0; x<timeAliado.size(); x++){
         // classe AnimacaoJogador carrega todos os sprites do jogador internamente
