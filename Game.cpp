@@ -863,4 +863,3 @@ void Game::mousePassiveMotionCallback(int x, int y) { Game::getInstance()->mouse
 void Game::keyboardClickCallback(unsigned char key, int x, int y) { Game::getInstance()->keyboardClick(key, x, y); }
 void Game::keyboardUpCallback(unsigned char key, int x, int y) { Game::getInstance()->keyboardUp(key, x, y); }
 void Game::idleCallback() { Game::getInstance()->updatePlayer(); }
-}
