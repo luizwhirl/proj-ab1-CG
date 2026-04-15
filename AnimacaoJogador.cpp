@@ -24,18 +24,35 @@ AnimacaoJogador::AnimacaoJogador() {
 }
 
 // carrega tudo as texturas separado
-void AnimacaoJogador::loadTextures() {
-    textureIdle = loadTextureSingle("assets/sprites/frente.png");
-    textureWalk1 = loadTextureSingle("assets/sprites/frente-anda.png");
-    textureWalk2 = loadTextureSingle("assets/sprites/frente-anda2.png");
-    
-    textureBackIdle = loadTextureSingle("assets/sprites/costa.png");
-    textureBackWalk1 = loadTextureSingle("assets/sprites/costa-anda.png");
-    textureBackWalk2 = loadTextureSingle("assets/sprites/costa-anda2.png");
-    
-    textureSideIdle = loadTextureSingle("assets/sprites/lado.png");
-    textureSideWalk1 = loadTextureSingle("assets/sprites/lado-anda.png");
-    textureSideWalk2 = loadTextureSingle("assets/sprites/lado-anda2.png");
+// recebe a flag isRival para escolher qual pack de textura carregar
+void AnimacaoJogador::loadTextures(bool isRival) {
+    if (isRival) {
+        // sprites do time rival 
+        textureIdle = loadTextureSingle("assets/sprites/rival/loiro-frente.png");
+        textureWalk1 = loadTextureSingle("assets/sprites/rival/loiro-frenteAnda.png");
+        textureWalk2 = loadTextureSingle("assets/sprites/rival/loiro-frenteAnda2.png");
+        
+        textureBackIdle = loadTextureSingle("assets/sprites/rival/loiro-costa.png");
+        textureBackWalk1 = loadTextureSingle("assets/sprites/rival/loiro-costaAnda.png");
+        textureBackWalk2 = loadTextureSingle("assets/sprites/rival/loiro-costaAnda2.png");
+        
+        textureSideIdle = loadTextureSingle("assets/sprites/rival/loiro-lado.png");
+        textureSideWalk1 = loadTextureSingle("assets/sprites/rival/loiro-ladoAnda.png");
+        textureSideWalk2 = loadTextureSingle("assets/sprites/rival/loiro-ladoAnda2.png");
+    } else {
+        // sprites dos aliado
+        textureIdle = loadTextureSingle("assets/sprites/frente.png");
+        textureWalk1 = loadTextureSingle("assets/sprites/frente-anda.png");
+        textureWalk2 = loadTextureSingle("assets/sprites/frente-anda2.png");
+        
+        textureBackIdle = loadTextureSingle("assets/sprites/costa.png");
+        textureBackWalk1 = loadTextureSingle("assets/sprites/costa-anda.png");
+        textureBackWalk2 = loadTextureSingle("assets/sprites/costa-anda2.png");
+        
+        textureSideIdle = loadTextureSingle("assets/sprites/lado.png");
+        textureSideWalk1 = loadTextureSingle("assets/sprites/lado-anda.png");
+        textureSideWalk2 = loadTextureSingle("assets/sprites/lado-anda2.png");
+    }
 }
 
 // implementando o carregamento do png e criando a textura do opengiló

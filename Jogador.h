@@ -22,7 +22,8 @@ public:
     void draw();
     
     // carrega o sprite
-    void loadTexture(); 
+    // adiciona parametro isRival para decidir qual textura carregar
+    void loadTexture(bool isRival = false); 
     
     // metodo pro jogadorsaber qando deve comecar a animacao de andar
     void setAndando(bool andando); 

@@ -22,11 +22,16 @@ Game::Game() {
     // printa o time rival
     for (int i = 0; i < 10; i++) {
         timeRival.push_back(Jogador(posicoes442[i].first * -1.0f, posicoes442[i].second * -1.0f));
+        // força os rivais a nascerem olhando para o sul e estaticos
+        timeRival[i].lastDirection = 'S'; 
+        timeRival[i].setAndando(false);
     }
 
     // printa o time aliado
     for (int i = 0; i < 10; i++) {
         timeAliado.push_back(Jogador(posicoes442[i].first, posicoes442[i].second));
+        // garante que os aliados também iniciem de forma estática
+        timeAliado[i].setAndando(false);
     }
 
     // inicialização dos dois goleiros, definindo suas posições no eixo Y e passando true/false para a tag isTop
@@ -60,7 +65,13 @@ void Game::init() {
     for (int x=0; x<timeAliado.size(); x++){
         // classe AnimacaoJogador carrega todos os sprites do jogador internamente
         // o loadtexture vai chamar ela dispois
-        timeAliado[x].loadTexture();
+        // seta "false" indicando ser aliado
+        timeAliado[x].loadTexture(false);
+    }
+    
+    // o for para grarante o carregamento das texturas do time rival com a flag true
+    for (int x=0; x<timeRival.size(); x++){
+        timeRival[x].loadTexture(true); 
     }
 }
 
@@ -197,6 +208,10 @@ void Game::atualizarIARival(){
 
 for (int i = 0; i < timeRival.size(); i++) {
     
+    // guarda a posicao anterior para saber pra onde o macaco vai andar
+    float oldX = timeRival[i].x;
+    float oldY = timeRival[i].y;
+
     // se o rival está com a bola ele ataca
     if (bola.statusPosse == 2 && bola.idRival == i) {
         
@@ -261,6 +276,24 @@ for (int i = 0; i < timeRival.size(); i++) {
             timeRival[i].x += (dirXBase / distPraBase) * 0.004f; 
             timeRival[i].y += (dirYBase / distPraBase) * 0.004f;
         }
+    }
+    
+    // verifica diferenca de posicao para virar o sprite na direcao correta
+    float diffX = timeRival[i].x - oldX;
+    float diffY = timeRival[i].y - oldY;
+
+    if (std::abs(diffX) > 0.0001f || std::abs(diffY) > 0.0001f) {
+        timeRival[i].setAndando(true);
+        // atializa direcao baseado na maior diferenca de eixo percorrida
+        if (std::abs(diffX) > std::abs(diffY)) {
+            if (diffX > 0) timeRival[i].lastDirection = 'D';
+            else timeRival[i].lastDirection = 'A';
+        } else {
+            if (diffY > 0) timeRival[i].lastDirection = 'W';
+            else timeRival[i].lastDirection = 'S';
+        }
+    } else {
+        timeRival[i].setAndando(false);
     }
 }
 }
@@ -456,10 +489,16 @@ void Game::updatePlayer() {
         for (int i = 0; i < timeRival.size(); i++) {
             timeRival[i].x = timeRival[i].baseX;
             timeRival[i].y = timeRival[i].baseY;
+            // reseta a direção dos rivais para o sul e os deixa estáticos
+            timeRival[i].lastDirection = 'S';
+            timeRival[i].setAndando(false);
         }
         for (int i = 0; i < timeAliado.size(); i++) {
             timeAliado[i].x = timeAliado[i].baseX;
             timeAliado[i].y = timeAliado[i].baseY;
+            // reseta aliados para o norte e tira a animação 
+            timeAliado[i].lastDirection = 'W';
+            timeAliado[i].setAndando(false);
         }
         indiceJogador = 0;
     } else if (statusGol == 2) {
@@ -474,10 +513,16 @@ void Game::updatePlayer() {
         for (int i = 0; i < timeRival.size(); i++) {
             timeRival[i].x = timeRival[i].baseX;
             timeRival[i].y = timeRival[i].baseY;
+            // reseta a direção dos rivais para o sul e os deixa estáticos
+            timeRival[i].lastDirection = 'S';
+            timeRival[i].setAndando(false);
         }
         for (int i = 0; i < timeAliado.size(); i++) {
             timeAliado[i].x = timeAliado[i].baseX;
             timeAliado[i].y = timeAliado[i].baseY;
+            // reseta aliados para o nortee tira a animação
+            timeAliado[i].lastDirection = 'W';
+            timeAliado[i].setAndando(false);
         }
         indiceJogador = 0;
     }

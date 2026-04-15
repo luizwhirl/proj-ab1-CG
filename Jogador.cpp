@@ -10,8 +10,9 @@ Jogador::Jogador(float startX, float startY) {
     baseY = startY;
 }
 // pede pra classe de animacao carregar todas as texturas
-void Jogador::loadTexture() {
-    animacao.loadTextures();
+// repassa parametro isRival para a classe animacao
+void Jogador::loadTexture(bool isRival) {
+    animacao.loadTextures(isRival);
 }
 
 // repassa o estado de movimento pra animacao

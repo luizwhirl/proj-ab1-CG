@@ -29,7 +29,8 @@ public:
     AnimacaoJogador();
 
     // metodo pra carregar todas as texturas usadas pelo jogador
-    void loadTextures();
+    // adiciona isRival para definir se carrega o sprite rival ou padrao
+    void loadTextures(bool isRival = false);
     
     // metodo auxiliar pra carregar uma textura especifica
     GLuint loadTextureSingle(const char* filename);
