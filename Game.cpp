@@ -108,7 +108,7 @@ void Game::display() {
     for (int x=0; x<timeAliado.size(); x++){
         timeRival[x].draw();
     }
-    
+
     for (int x=0; x<timeAliado.size(); x++){
         timeAliado[x].draw();
     }
@@ -163,6 +163,9 @@ void Game::keyboardClick(unsigned char key, int x, int y) {
     if (key == 'j' || key == 'J') input.isJPressed = true;
     if (key == 'k' || key == 'K') input.isKPressed = true;
     if (key == 'l' || key == 'L') input.isLPressed = true;
+    if (bola.statusPosse == 2 && key == ' ') {
+        cliquesParaSoltar++;
+    }
 }
 
 // ve se a tecla foi solto
@@ -180,6 +183,86 @@ void Game::keyboardUp(unsigned char key, int x, int y) {
 float Game::pitagoras(float catetoAdj, float catetoOpos) {
     float distance = sqrt(pow(catetoAdj, 2) + pow(catetoOpos, 2));
     return distance;
+}
+
+void Game::atualizarIARival(){
+   if (bola.statusPosse == 2 && cliquesParaSoltar >= 10) {
+    bola.statusPosse = 0; // bola fica livre
+    bola.velY = 0.05f; // afasta a bola um pouquinho do rival
+    bola.framesIntocavel = 30; 
+    cliquesParaSoltar = 0; 
+}
+
+//  IA do time rival (botei 10 macacos pra controlar o time)
+
+for (int i = 0; i < timeRival.size(); i++) {
+    
+    // se o rival está com a bola ele ataca
+    if (bola.statusPosse == 2 && bola.idRival == i) {
+        
+        // ataca para o gol debaixo
+        float dirX = 0.0f - timeRival[i].x;
+        float dirY = -4.5f - timeRival[i].y;
+        float distProGol = pitagoras(dirX, dirY);
+
+        if (distProGol > 0) {
+            // rival corre pro gol
+            timeRival[i].x += (dirX / distProGol) * 0.002f; 
+            timeRival[i].y += (dirY / distProGol) * 0.002f;
+        }
+
+        // A bola gruda no pé dele
+        bola.x = timeRival[i].x;
+        bola.y = timeRival[i].y - 0.4f; 
+
+        // chegou na área, daqui é caixa
+        if (distProGol < 1.5f) {
+            bola.statusPosse = 0;
+            bola.velY = -0.05f;
+        }
+    } 
+
+    
+
+    // se a bola está livre ou com o jogador eles tenteam roubar
+    else if ((bola.statusPosse == 0 || bola.statusPosse == 1) && bola.framesIntocavel == 0) {
+        float distPraBola = pitagoras(bola.x - timeRival[i].x, bola.y - timeRival[i].y);
+        // chegou perto rouba a bola
+        if (distPraBola < 0.4f) {
+            bola.statusPosse = 2; 
+            bola.idRival = i;
+            cliquesParaSoltar = 0;
+        } 
+        // Se ainda tá longe, mas tá no campo de visão , persegue a bola
+        else if (distPraBola < 2.0f) {
+            float dirX = bola.x - timeRival[i].x;
+            float dirY = bola.y - timeRival[i].y;
+            timeRival[i].x += (dirX / distPraBola) * 0.0009f; 
+            timeRival[i].y += (dirY / distPraBola) * 0.0009f;
+        }
+        else {
+            float dirXBase = timeRival[i].baseX - timeRival[i].x;
+            float dirYBase = timeRival[i].baseY - timeRival[i].y;
+            float distPraBase = pitagoras(dirXBase, dirYBase);
+            
+            if (distPraBase > 0.05f) {
+                timeRival[i].x += (dirXBase / distPraBase) * 0.004f; 
+                timeRival[i].y += (dirYBase / distPraBase) * 0.004f;
+            }
+        }
+    }
+
+    else{
+        float dirXBase = timeRival[i].baseX - timeRival[i].x;
+        float dirYBase = timeRival[i].baseY - timeRival[i].y;
+        float distPraBase = pitagoras(dirXBase, dirYBase);
+        
+        if (distPraBase > 0.05f) {
+            timeRival[i].x += (dirXBase / distPraBase) * 0.004f; 
+            timeRival[i].y += (dirYBase / distPraBase) * 0.004f;
+        }
+    }
+}
 }
 
 // Atualiza a posição do jogador e da bola
@@ -217,6 +300,15 @@ void Game::updatePlayer() {
         //  entao ele ta tentano se move
     }
 
+    // começa o jogo quando dá um clique
+    if (isMoving) {
+        jogoIniciado = true;
+    }
+
+    if (jogoIniciado == true) {
+        atualizarIARival();
+    }
+
     // grante que os outros jogadores do time que não estão 
     // sendo controlados parem a animação
     for (int x = 0; x < timeAliado.size(); x++) {
@@ -227,12 +319,12 @@ void Game::updatePlayer() {
     timeAliado[indiceJogador].setAndando(isMoving);
 
     // faz o jogador correr
-    float velocidadeJogador = 0.01f; 
+    float velocidadeJogador = 0.005f; 
     timeAliado[indiceJogador].x += dirX * velocidadeJogador;
     timeAliado[indiceJogador].y += dirY * velocidadeJogador;
 
     // pega a bola se chegar perto
-    if (!bola.isHeld) {
+    if (bola.statusPosse == 0) {
         float distance = pitagoras(
             bola.x - timeAliado[indiceJogador].x, 
             bola.y - timeAliado[indiceJogador].y
@@ -240,12 +332,12 @@ void Game::updatePlayer() {
         if (distance < 0.4 && bola.framesIntocavel == 0) {
             bola.velX = 0;
             bola.velY = 0;
-            bola.isHeld = true;
+            bola.statusPosse = 1;
         }
     }
 
     // isso mesmo garotinho joga la bola para o papai
-    if (input.isJPressed && !input.wasJPressed && bola.isHeld) {
+    if (input.isJPressed && !input.wasJPressed && bola.statusPosse == 1) {
         // achar o jogador mais proximo
         float menorDist = 100000000.0f;
         int maisProx = -1;
@@ -278,19 +370,19 @@ void Game::updatePlayer() {
         // o chute é ajustado de acordo com a distância
         bola.velX += vectorX * (velBola);
         bola.velY += vectorY * (velBola);
-        bola.isHeld = false;
+        bola.statusPosse = 0;
         indiceJogador = maisProx;
     }
 
     // dá o chutão 
-    if (input.isKPressed && bola.isHeld) {
+    if (input.isKPressed && bola.statusPosse == 1) {
         switch (timeAliado[indiceJogador].lastDirection) {
             case 'W': bola.velY += 0.05f; break;
             case 'A': bola.velX -= 0.05f; break;
             case 'S': bola.velY -= 0.05f; break;
             case 'D': bola.velX += 0.05f; break;
         }
-        bola.isHeld = false;
+        bola.statusPosse = 0;
     }
 
     // troca de jogador
@@ -302,7 +394,7 @@ void Game::updatePlayer() {
     }
 
     // o jogador sai driblando com a bola colada no pé
-    if (bola.isHeld) {
+    if (bola.statusPosse == 1) {
         switch (timeAliado[indiceJogador].lastDirection) {
             case 'W':
                 bola.x = timeAliado[indiceJogador].x;
@@ -323,7 +415,7 @@ void Game::updatePlayer() {
         }
     }
 
-    if (!bola.isHeld) {
+    if (bola.statusPosse == 0) {
         // adiciona aceleração a bola
         bola.x += bola.velX;
         bola.y += bola.velY;
@@ -358,8 +450,18 @@ void Game::updatePlayer() {
         bola.x = 0.0f;
         bola.y = 0.0f;
         bola.velX = 0.0f; 
-        bola.velY = 0.0f; 
-        bola.isHeld = false;
+        bola.velY = 0.0f;
+        jogoIniciado = false; 
+        bola.statusPosse = 0;
+        for (int i = 0; i < timeRival.size(); i++) {
+            timeRival[i].x = timeRival[i].baseX;
+            timeRival[i].y = timeRival[i].baseY;
+        }
+        for (int i = 0; i < timeAliado.size(); i++) {
+            timeAliado[i].x = timeAliado[i].baseX;
+            timeAliado[i].y = timeAliado[i].baseY;
+        }
+        indiceJogador = 0;
     } else if (statusGol == 2) {
         // se o status for 2 pontua para a alemanha
         scoreboard.scoreRival();
@@ -367,7 +469,17 @@ void Game::updatePlayer() {
         bola.y = 0.0f;
         bola.velX = 0.0f;
         bola.velY = 0.0f;
-        bola.isHeld = false;
+        jogoIniciado = false;
+        bola.statusPosse = 0;
+        for (int i = 0; i < timeRival.size(); i++) {
+            timeRival[i].x = timeRival[i].baseX;
+            timeRival[i].y = timeRival[i].baseY;
+        }
+        for (int i = 0; i < timeAliado.size(); i++) {
+            timeAliado[i].x = timeAliado[i].baseX;
+            timeAliado[i].y = timeAliado[i].baseY;
+        }
+        indiceJogador = 0;
     }
 
     input.wasJPressed = input.isJPressed;

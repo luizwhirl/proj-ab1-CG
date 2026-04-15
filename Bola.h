@@ -6,6 +6,9 @@ public:
     float x;
     float y;
     bool isHeld = false;
+    int statusPosse = 0; // 0 -> livre / 1 -> time aliado / 2-> time rival
+    int idRival = -1;
+
     float velX = 0;
     float velY = 0;
     int framesIntocavel = 0;
