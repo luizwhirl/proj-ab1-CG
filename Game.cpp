@@ -10,10 +10,12 @@
 Game* Game::instance = nullptr;
 
 namespace {
+// limita um valor para evitar exageros no deslocamento e nas velocidades.
 float clampValor(float valor, float minimo, float maximo) {
     return std::max(minimo, std::min(valor, maximo));
 }
 
+// move o jogador até um alvo sem oscilar quando ele já chegou perto.
 void moverJogadorPara(Jogador& jogador, float alvoX, float alvoY, float velocidade, float tolerancia = 0.05f) {
     float dirX = alvoX - jogador.x;
     float dirY = alvoY - jogador.y;
@@ -28,6 +30,7 @@ void moverJogadorPara(Jogador& jogador, float alvoX, float alvoY, float velocida
     jogador.y += (dirY / distancia) * passo;
 }
 
+// atualiza direção e animação usando o deslocamento real do frame.
 void atualizarDirecaoEAnimacao(Jogador& jogador, float oldX, float oldY) {
     float diffX = jogador.x - oldX;
     float diffY = jogador.y - oldY;
@@ -44,6 +47,7 @@ void atualizarDirecaoEAnimacao(Jogador& jogador, float oldX, float oldY) {
     }
 }
 
+// Mede o quão marcado um jogador está pelo time adversário.
 float distanciaMaisProxima(const Jogador& referencia, const std::vector<Jogador>& adversarios) {
     float menorDistancia = 1000000.0f;
 
@@ -57,19 +61,23 @@ float distanciaMaisProxima(const Jogador& referencia, const std::vector<Jogador>
     return menorDistancia;
 }
 
+// Escolhe um companheiro livre e mais adiantado para receber o passe rival.
 int escolherMelhorPasseRival(const std::vector<Jogador>& rivais, const std::vector<Jogador>& aliados, int portador) {
     int melhorOpcao = -1;
     float melhorScore = -1000000.0f;
 
+    // procura seus amiguinhos
     for (int i = 0; i < static_cast<int>(rivais.size()); i++) {
         if (i == portador) {
             continue;
         }
 
+        // só considera companheiros numa faixa razoável de passe
         float dx = rivais[i].x - rivais[portador].x;
         float dy = rivais[i].y - rivais[portador].y;
         float distancia = std::sqrt((dx * dx) + (dy * dy));
 
+        
         if (distancia < 0.8f || distancia > 3.2f) {
             continue;
         }
@@ -78,6 +86,7 @@ int escolherMelhorPasseRival(const std::vector<Jogador>& rivais, const std::vect
             continue;
         }
 
+        // quanto mais livre e mais perto do gol, maior a nota do passe
         float coberturaAliada = distanciaMaisProxima(rivais[i], aliados);
         float progressoAoGol = rivais[portador].y - rivais[i].y;
         float score = (progressoAoGol * 1.8f) + (coberturaAliada * 0.9f) - (distancia * 0.35f) - (std::abs(rivais[i].x) * 0.15f);
@@ -91,12 +100,14 @@ int escolherMelhorPasseRival(const std::vector<Jogador>& rivais, const std::vect
     return melhorOpcao;
 }
 
+// seleciona os dois jogadores que realmente vão pressionar a bola.
 void selecionarPerseguidores(const std::vector<Jogador>& time, const Bola& bola, int ignorarIndex, int& maisProximo, int& segundoMaisProximo) {
     float menorDistancia = 1000000.0f;
     float segundaMenorDistancia = 1000000.0f;
     maisProximo = -1;
     segundoMaisProximo = -1;
 
+    // ignora quem já está com a posse para evitar perseguição falsa.
     for (int i = 0; i < static_cast<int>(time.size()); i++) {
         if (i == ignorarIndex) {
             continue;
@@ -106,6 +117,7 @@ void selecionarPerseguidores(const std::vector<Jogador>& time, const Bola& bola,
         float dy = bola.y - time[i].y;
         float distancia = std::sqrt((dx * dx) + (dy * dy));
 
+        // salva os mais proximos
         if (distancia < menorDistancia) {
             segundaMenorDistancia = menorDistancia;
             segundoMaisProximo = maisProximo;
@@ -290,7 +302,8 @@ void Game::keyboardClick(unsigned char key, int x, int y) {
     if (key == 'j' || key == 'J') input.isJPressed = true;
     if (key == 'k' || key == 'K') input.isKPressed = true;
     if (key == 'l' || key == 'L') input.isLPressed = true;
-    if (bola.statusPosse == 2 && key == ' ') {
+    // Regra antiga: 5 toques em K fazem o rival largar a bola.
+    if (bola.statusPosse == 2 && (key == 'k' || key == 'K')) {
         cliquesParaSoltar++;
     }
 }
@@ -354,7 +367,9 @@ void Game::resolverColisoesJogadores() {
     }
 }
 
+
 void Game::atualizarIARival(){
+    // força a perda da posse rival depois dos 5 cliques em K.
     if (bola.statusPosse == 2 && cliquesParaSoltar >= 5) {
         bola.statusPosse = 0;
         bola.idRival = -1;
@@ -365,6 +380,7 @@ void Game::atualizarIARival(){
         cliquesParaSoltar = 0;
     }
 
+    // IA do rival (botei 10 macacos pra controlar o time)
     int rivalMaisProximo = -1;
     int segundoRivalMaisProximo = -1;
     selecionarPerseguidores(timeRival, bola, -1, rivalMaisProximo, segundoRivalMaisProximo);
@@ -373,11 +389,13 @@ void Game::atualizarIARival(){
         float oldX = timeRival[i].x;
         float oldY = timeRival[i].y;
 
+        // se a bola está com o time rival
         if (bola.statusPosse == 2 && bola.idRival == i) {
             float dirGolX = 0.0f - timeRival[i].x;
             float dirGolY = -4.5f - timeRival[i].y;
             float distProGol = pitagoras(dirGolX, dirGolY);
 
+            // se estiver pressionado, tenta antes o passe e só depois a corrida.
             if (cooldownPasseRival == 0) {
                 int melhorPasse = escolherMelhorPasseRival(timeRival, timeAliado, i);
                 float pressaoMaisProxima = distanciaMaisProxima(timeRival[i], timeAliado);
@@ -406,12 +424,14 @@ void Game::atualizarIARival(){
                 }
             }
 
+            // sem passe, o portador tenta conduzir até a zona de finalização.
             if (bola.statusPosse == 2 && bola.idRival == i) {
                 if (distProGol > 1.35f) {
                     moverJogadorPara(timeRival[i], 0.0f, -4.5f, 0.0028f, 0.15f);
                     bola.x = timeRival[i].x;
                     bola.y = timeRival[i].y - 0.4f;
                 } else {
+                    // perto do gol, finaliza em vez de continuar carregando.
                     bola.statusPosse = 0;
                     bola.idRival = -1;
                     bola.framesIntocavel = 12;
@@ -423,6 +443,7 @@ void Game::atualizarIARival(){
                 }
             }
         } else if (bola.statusPosse == 2 && bola.idRival >= 0 && bola.idRival < static_cast<int>(timeRival.size())) {
+            // quem não está com a bola acompanha a jogada sem abandonar a formação.
             float avancoTime = clampValor((timeRival[bola.idRival].baseY - timeRival[bola.idRival].y) * 0.45f, 0.0f, 1.2f);
             float alvoX = timeRival[i].baseX + clampValor((timeRival[bola.idRival].x - timeRival[i].baseX) * 0.35f, -0.9f, 0.9f);
             float alvoY = timeRival[i].baseY - avancoTime;
@@ -430,6 +451,7 @@ void Game::atualizarIARival(){
             
         } else if ((bola.statusPosse == 0 || bola.statusPosse == 1) && bola.framesIntocavel == 0) {
             float distPraBola = pitagoras(bola.x - timeRival[i].x, bola.y - timeRival[i].y);
+            // só os dois mais próximos dão o bote, o resto fecha espaço.
             bool devePressionar = (i == rivalMaisProximo || i == segundoRivalMaisProximo) && distPraBola < 3.5f;
 
             if (distPraBola < 0.4f) {
@@ -463,6 +485,8 @@ void Game::atualizarIATime(){
     int segundoAliadoMaisProximo = -1;
     selecionarPerseguidores(timeAliado, bola, indiceJogador, aliadoMaisProximo, segundoAliadoMaisProximo);
 
+
+    // botei mais 10 macacos aqui
     for (int i = 0; i < static_cast<int>(timeAliado.size()); i++) {
         if (i == indiceJogador) {
             continue;
@@ -472,12 +496,14 @@ void Game::atualizarIATime(){
         float oldY = timeAliado[i].y;
 
         if (bola.statusPosse == 1) {
+            // os aliados acompanham o ataque, mas sem disparar todos para o gol.
             float avancoTime = clampValor((timeAliado[indiceJogador].y - timeAliado[indiceJogador].baseY) * 0.45f, 0.0f, 1.2f);
             float alvoX = timeAliado[i].baseX + clampValor((timeAliado[indiceJogador].x - timeAliado[i].baseX) * 0.35f, -0.9f, 0.9f);
             float alvoY = timeAliado[i].baseY + avancoTime;
             moverJogadorPara(timeAliado[i], alvoX, alvoY, 0.0025f);
         } else if ((bola.statusPosse == 0 || bola.statusPosse == 2) && bola.framesIntocavel == 0) {
             float distPraBola = pitagoras(bola.x - timeAliado[i].x, bola.y - timeAliado[i].y);
+            // só dois aliados pressionam forte para evitar desorganizar o time
             bool devePressionar = (i == aliadoMaisProximo || i == segundoAliadoMaisProximo) && distPraBola < 3.5f;
 
             if (distPraBola < 0.4f) {
@@ -605,7 +631,7 @@ void Game::updatePlayer() {
         // torna a bola intocavel por uns frames durante o passe
         bola.framesIntocavel = 15;
 
-        // calculamos a direção do jogador
+        // O passe nasce já apontado para o companheiro escolhido.
         float vectorX = (timeAliado[maisProx].x - timeAliado[indiceJogador].x)/menorDist;
         float vectorY = (timeAliado[maisProx].y - timeAliado[indiceJogador].y)/menorDist;
 
@@ -615,7 +641,7 @@ void Game::updatePlayer() {
         if(velBola < 0.04f){
             velBola = 0.04f;
         }
-        // o chute é ajustado de acordo com a distância
+        // A bola sai um pouco à frente para não ficar presa no pé de origem.
         bola.x = timeAliado[indiceJogador].x + vectorX * 0.35f;
         bola.y = timeAliado[indiceJogador].y + vectorY * 0.35f;
         bola.velX = vectorX * (velBola);
@@ -680,6 +706,11 @@ void Game::updatePlayer() {
         // bola vai freiando na grama (papo de fisica)
         bola.velX *= 0.98f;
         bola.velY *= 0.98f;
+
+        // Mantém a mecânica original de empurrar a bola livre com WASD.
+        float velocidadeBolaViva = 0.01f;
+        bola.x += dirX * velocidadeBolaViva;
+        bola.y += dirY * velocidadeBolaViva;
     }
 
     // resolvendo as colisões DEPOIS do update de teclas
