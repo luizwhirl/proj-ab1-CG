@@ -30,7 +30,7 @@ void moverJogadorPara(Jogador& jogador, float alvoX, float alvoY, float velocida
     jogador.y += (dirY / distancia) * passo;
 }
 
-// atualiza direção e animação usando o deslocamento real do frame.
+// atualiza direção e animação usando o deslocamento real do frame
 void atualizarDirecaoEAnimacao(Jogador& jogador, float oldX, float oldY) {
     float diffX = jogador.x - oldX;
     float diffY = jogador.y - oldY;
@@ -188,7 +188,7 @@ void Game::init() {
                                     "assets/sprites/arquibancada/ArquibancadaC.png", 
                                     "assets/sprites/arquibancada/ArquibancadaD.png");
     
-    // adicionado da branch intelisprites: carrega os sprites de animacao da bola junto com os carregamentos do jogo
+    // carrega os sprites de animacao da bola junto com os carregamentos do jogo
     bola.loadTextures();
 
     for (int x=0; x<timeAliado.size(); x++){
@@ -223,15 +223,34 @@ void Game::setupCamera() {
         bottom = -size; top = size;
     }
 
+    // pensando em alterar esse zoom aqui hein
     if (input.isZoomed) {
         float zoomFactor = 0.35f;
         float viewWidth = (right - left) * zoomFactor;
         float viewHeight = (top - bottom) * zoomFactor;
 
-        left = input.mouseWorldX - viewWidth / 2.0f;
-        right = input.mouseWorldX + viewWidth / 2.0f;
-        bottom = input.mouseWorldY - viewHeight / 2.0f;
-        top = input.mouseWorldY + viewHeight / 2.0f;
+        // variáveis para definir o alvo da câmera
+        float alvoX, alvoY;
+
+        // lógica para a câmera seguir o jogador COM a bola ou a BOLA SOLTAAA
+        if (bola.statusPosse == 1) { // 1 = time aliado
+            // if -> alguém pegou a bola: a câmera foca nas coordenadas do jogador atual aliado
+            alvoX = timeAliado[indiceJogador].x;
+            alvoY = timeAliado[indiceJogador].y;
+        } else if (bola.statusPosse == 2 && bola.idRival >= 0 && bola.idRival < timeRival.size()) { // 2 = time rival
+            // a câmera também sabe seguir o rival caso ele esteja conduzindo a bola
+            alvoX = timeRival[bola.idRival].x;
+            alvoY = timeRival[bola.idRival].y;
+        } else {
+            // if-> a bola tá solta (statusPosse == 0): foca na bola
+            alvoX = bola.x;
+            alvoY = bola.y;
+        }
+
+        left = alvoX - viewWidth / 2.0f;
+        right = alvoX + viewWidth / 2.0f;
+        bottom = alvoY - viewHeight / 2.0f;
+        top = alvoY + viewHeight / 2.0f;
     }
 
     glOrtho(left, right, bottom, top, -1.0, 1.0);
@@ -264,7 +283,7 @@ void Game::display() {
     // os gols sao desenhados POR ÚLTIMO pra rede e o topo aparecerem ACIMA deles visualmente
     gol.draw();
 
-    // adicionado da branch intelisprites: chama o desenho do item caso esteja em campo
+    // chama o desenho do item caso esteja em campo
     powerUp.draw(); 
 
     scoreboard.draw(winW, winH);
@@ -284,20 +303,11 @@ void Game::mouseClick(int button, int state, int x, int y) {
         
         input.isZoomed = !input.isZoomed;
         
-        if (input.isZoomed) {
-            input.updateMouseWorldCoords(x, y, winW, winH);
-        }
         glutPostRedisplay();
     }
 }
 
 // passivo igual lucas (????????)
-void Game::mousePassiveMotion(int x, int y) {
-    if (input.isZoomed) {
-        input.updateMouseWorldCoords(x, y, winW, winH);
-        glutPostRedisplay(); // atualiza continuamente a tela ne pq zoom i tals
-    }
-}
 
 // verifica se a tecla foi clicada
 void Game::keyboardClick(unsigned char key, int x, int y) {
@@ -308,8 +318,8 @@ void Game::keyboardClick(unsigned char key, int x, int y) {
     if (key == 'j' || key == 'J') input.isJPressed = true;
     if (key == 'k' || key == 'K') input.isKPressed = true;
     if (key == 'l' || key == 'L') input.isLPressed = true;
-    // Regra antiga: 5 toques em K fazem o rival largar a bola.
-    // adicionado da branch intelisprites: suporte para 'espaço' tbm soltar a bola
+    // regra antiga> 5 toques em K fazem o rival largar a bola
+    // suporte para 'espaço' tbm soltar a bola
     if (bola.statusPosse == 2 && (key == 'k' || key == 'K' || key == ' ')) {
         cliquesParaSoltar++;
     }
@@ -462,7 +472,7 @@ void Game::atualizarIARival(){
             bool devePressionar = (i == rivalMaisProximo || i == segundoRivalMaisProximo) && distPraBola < 3.5f;
 
             if (distPraBola < 0.4f) {
-                // adicionado da branch intelisprites: verifica invencibilidade antes de roubar
+                // verifica invencibilidade antes de roubar
                 if (tempoInvincibilidade > 0 && bola.statusPosse == 1) {
                     // não rouba, a invencibilidade não permite
                 } else {
@@ -543,7 +553,7 @@ void Game::atualizarIATime(){
 
 // Atualiza a posição do jogador e da bola
 void Game::updatePlayer() {
-    // adicionado da branch intelisprites: contagem e respawn do power Up
+    // contagem e respawn do power up
     if (tempoSpeedBoost > 0) tempoSpeedBoost--;
     if (tempoInvincibilidade > 0) tempoInvincibilidade--;
 
@@ -619,7 +629,7 @@ void Game::updatePlayer() {
         timeAliado[indiceJogador].setAndando(isMoving);
 
         // faz o jogador correr
-        // adicionado da branch intelisprites: aplica a nova velocidade drobada caso o speed boost esteja on
+        // aplica a nova velocidade drobada caso o speed boost esteja on
         float velocidadeJogador = (tempoSpeedBoost > 0) ? 0.02f : 0.01f; 
         timeAliado[indiceJogador].x += dirX * velocidadeJogador;
         timeAliado[indiceJogador].y += dirY * velocidadeJogador;
@@ -777,7 +787,7 @@ void Game::updatePlayer() {
     int statusGol = gol.resolverColisao(bola.x, bola.y, 0.1f);
     
     if (statusGol == 1) {
-        // adicionado da branch intelisprites: limpa os power up no reset do gol
+        // limpa os power up no reset do gol
         powerUp.active = false;
         spawnTimer = 0;
         tempoSpeedBoost = 0;
@@ -809,7 +819,7 @@ void Game::updatePlayer() {
         }
         indiceJogador = 0;
     } else if (statusGol == 2) {
-        // adicionado da branch intelisprites: limpa os power up no reset do gol
+        // limpa os power up no reset do gol
         powerUp.active = false;
         spawnTimer = 0;
         tempoSpeedBoost = 0;
@@ -859,7 +869,6 @@ void Game::updatePlayer() {
 void Game::displayCallback() { Game::getInstance()->display(); }
 void Game::reshapeCallback(int w, int h) { Game::getInstance()->reshape(w, h); }
 void Game::mouseClickCallback(int button, int state, int x, int y) { Game::getInstance()->mouseClick(button, state, x, y); }
-void Game::mousePassiveMotionCallback(int x, int y) { Game::getInstance()->mousePassiveMotion(x, y); }
 void Game::keyboardClickCallback(unsigned char key, int x, int y) { Game::getInstance()->keyboardClick(key, x, y); }
 void Game::keyboardUpCallback(unsigned char key, int x, int y) { Game::getInstance()->keyboardUp(key, x, y); }
 void Game::idleCallback() { Game::getInstance()->updatePlayer(); }

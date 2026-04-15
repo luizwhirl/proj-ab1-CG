@@ -20,7 +20,7 @@ int main(int argc, char** argv) {
     glutDisplayFunc(Game::displayCallback);
     glutReshapeFunc(Game::reshapeCallback);
     glutMouseFunc(Game::mouseClickCallback);
-    glutPassiveMotionFunc(Game::mousePassiveMotionCallback);
+        
     glutKeyboardFunc(Game::keyboardClickCallback);
     glutKeyboardUpFunc(Game::keyboardUpCallback);
     glutIdleFunc(Game::idleCallback);
