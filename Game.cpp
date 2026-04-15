@@ -201,8 +201,50 @@ float Game::pitagoras(float catetoAdj, float catetoOpos) {
     return distance;
 }
 
+// immplementa  sistema de colisão para jogadores
+void Game::resolverColisoesJogadores() {
+    float raioJogador = 0.2f; // raio considerado para cada jogador
+    float distanciaMinima = raioJogador * 2.0f; // distância mínima entre os centros (0.4f)
+
+    // agrupa todos os jogadores em um vetor de ponteiros para testar todos contra todos
+    std::vector<Jogador*> todosJogadores;
+    for (int i = 0; i < timeAliado.size(); i++) {
+        todosJogadores.push_back(&timeAliado[i]);
+    }
+    for (int i = 0; i < timeRival.size(); i++) {
+        todosJogadores.push_back(&timeRival[i]);
+    }
+
+    // compara cada jogador com todos os outros para evitar entrar um no outro
+    for (size_t i = 0; i < todosJogadores.size(); i++) {
+        for (size_t j = i + 1; j < todosJogadores.size(); j++) {
+            Jogador* j1 = todosJogadores[i];
+            Jogador* j2 = todosJogadores[j];
+
+            float dx = j2->x - j1->x;
+            float dy = j2->y - j1->y;
+            float dist = pitagoras(dx, dy);
+
+            // verifica se estão se sobrepondo (com tolerância pequena para evitar divisões por zero)
+            if (dist < distanciaMinima && dist > 0.0001f) {
+                float sobreposicao = distanciaMinima - dist;
+                
+                // normalizando a direção
+                float nx = dx / dist;
+                float ny = dy / dist;
+
+                // empurra metade da sobreposição para cada lado, separando fisicamente os corpos
+                j1->x -= nx * (sobreposicao / 2.0f);
+                j1->y -= ny * (sobreposicao / 2.0f);
+                j2->x += nx * (sobreposicao / 2.0f);
+                j2->y += ny * (sobreposicao / 2.0f);
+            }
+        }
+    }
+}
+
 void Game::atualizarIARival(){
-   if (bola.statusPosse == 2 && cliquesParaSoltar >= 10) {
+   if (bola.statusPosse == 2 && cliquesParaSoltar >= 5) {
     bola.statusPosse = 0; // bola fica livre
     bola.velY = 0.05f; // afasta a bola um pouquinho do rival
     bola.framesIntocavel = 30; 
@@ -486,6 +528,9 @@ void Game::updatePlayer() {
     // primeiro os limites do campo para não deixar ngm sair
     campo.resolverColisaoLimites(timeAliado[indiceJogador].x, timeAliado[indiceJogador].y, 0.2f);
     campo.resolverColisaoLimites(bola.x, bola.y, 0.1f);
+
+    // afasta os jogadores que estejam esbarrando ou se sobrepondo em campo
+    resolverColisoesJogadores();
 
     // atualiza lógica do goleiro (movimento) e colisões dele com jogador e bola
     goleiroRival.update(bola);

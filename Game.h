@@ -47,6 +47,9 @@ public:
     void atualizarIARival();
     float pitagoras(float, float);
 
+    // resolve a colisão física/sobreposição entre todos os jogadores em campo
+    void resolverColisoesJogadores();
+
     static Game* getInstance();
 
     // callbacks estáticos pro glut - isso aqui basicamente é a ponte de ligação para o OO
