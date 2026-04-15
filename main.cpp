@@ -10,7 +10,7 @@ int main(int argc, char** argv) {
     glutInit(&argc, argv);
     glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_MULTISAMPLE);
     glutInitWindowSize(600, 800);
-    glutCreateWindow("Campo c Zum POO");
+    glutCreateWindow("Futebolzinho do Chiquinho - AB1 CG");
 
     // instancia o contexto/manager
     Game* game = Game::getInstance();

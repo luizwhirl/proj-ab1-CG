@@ -3,11 +3,49 @@
 #include <cstdlib>
 #include <cmath>
 
+#include "stb_image.h"
+#include <iostream>
+
 PowerUp::PowerUp() {
     active = false;
     x = 0.0f;
     y = 0.0f;
     type = 1;
+    // textura iniciada em texturas em 0
+    texBota = 0;
+    texEscudo = 0;
+}
+
+// func completa para carregar os png na memória da placa de vídeo
+void PowerUp::loadTextures() {
+    int width, height, channels;
+    unsigned char* data;
+
+    // carreca bota.png
+    data = stbi_load("assets/sprites/itens/bota.png", &width, &height, &channels, 4);
+    if (data) {
+        glGenTextures(1, &texBota);
+        glBindTexture(GL_TEXTURE_2D, texBota);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        stbi_image_free(data);
+    } else {
+        std::cout << "Falha ao carregar bota.png" << std::endl;
+    }
+
+    // carrega escudo.png
+    data = stbi_load("assets/sprites/itens/escudo.png", &width, &height, &channels, 4);
+    if (data) {
+        glGenTextures(1, &texEscudo);
+        glBindTexture(GL_TEXTURE_2D, texEscudo);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        stbi_image_free(data);
+    } else {
+        std::cout << "Falha ao carregar escudo.png" << std::endl;
+    }
 }
 
 void PowerUp::spawn() {
@@ -33,21 +71,33 @@ void PowerUp::draw() {
     glPushMatrix();
     glTranslatef(x, y, 0.0f);
 
+    // habilia textura 2D e o Alpha Blending para o fundo do png ficar transparente
+    glEnable(GL_TEXTURE_2D);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    
+    // define a cor base como branco para manter as cores reais das texturas do pnggg
+    glColor3f(1.0f, 1.0f, 1.0f);
+
     if (type == 1) {
-        glColor3f(1.0f, 0.0f, 0.0f); // vemlho
+        glBindTexture(GL_TEXTURE_2D, texBota); // define a textura ativa para a bota
     } else if (type == 2) {
-        glColor3f(0.0f, 0.0f, 1.0f); // azu
+        glBindTexture(GL_TEXTURE_2D, texEscudo); // define a textura ativa para o escudo
     }
 
     glBegin(GL_QUADS);
-        glVertex2f(-0.15f, -0.15f);
-        glVertex2f( 0.15f, -0.15f);
-        glVertex2f( 0.15f,  0.15f);
-        glVertex2f(-0.15f,  0.15f);
+        // glTexCoord2f foram adicionados antes de cada vértice para esticar a textura no quad
+        glTexCoord2f(0.0f, 0.0f); glVertex2f(-0.15f, -0.15f);
+        glTexCoord2f(1.0f, 0.0f); glVertex2f( 0.15f, -0.15f);
+        glTexCoord2f(1.0f, 1.0f); glVertex2f( 0.15f,  0.15f);
+        glTexCoord2f(0.0f, 1.0f); glVertex2f(-0.15f,  0.15f);
     glEnd();
 
     // reseta cor sinao fode as textura do jogo
     glColor3f(1.0f, 1.0f, 1.0f);
+
+    // desliga o GL_TEXTURE_2D para não quebrar a renderização dos objetos de cores lisas/sem textura
+    glDisable(GL_TEXTURE_2D);
 
     glPopMatrix();
 }

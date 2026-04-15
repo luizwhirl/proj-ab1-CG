@@ -191,6 +191,9 @@ void Game::init() {
     // carrega os sprites de animacao da bola junto com os carregamentos do jogo
     bola.loadTextures();
 
+    // chamada para carregar as novas texturas da bota e escudo do PowerUp
+    powerUp.loadTextures();
+
     for (int x=0; x<timeAliado.size(); x++){
         // classe AnimacaoJogador carrega todos os sprites do jogador internamente
         // o loadtexture vai chamar ela dispois
