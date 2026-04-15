@@ -188,6 +188,9 @@ void Game::init() {
                                     "assets/sprites/arquibancada/ArquibancadaC.png", 
                                     "assets/sprites/arquibancada/ArquibancadaD.png");
     
+    // adicionado da branch intelisprites: carrega os sprites de animacao da bola junto com os carregamentos do jogo
+    bola.loadTextures();
+
     for (int x=0; x<timeAliado.size(); x++){
         // classe AnimacaoJogador carrega todos os sprites do jogador internamente
         // o loadtexture vai chamar ela dispois
@@ -261,6 +264,9 @@ void Game::display() {
     // os gols sao desenhados POR ÚLTIMO pra rede e o topo aparecerem ACIMA deles visualmente
     gol.draw();
 
+    // adicionado da branch intelisprites: chama o desenho do item caso esteja em campo
+    powerUp.draw(); 
+
     scoreboard.draw(winW, winH);
 
     glutSwapBuffers();
@@ -303,7 +309,8 @@ void Game::keyboardClick(unsigned char key, int x, int y) {
     if (key == 'k' || key == 'K') input.isKPressed = true;
     if (key == 'l' || key == 'L') input.isLPressed = true;
     // Regra antiga: 5 toques em K fazem o rival largar a bola.
-    if (bola.statusPosse == 2 && (key == 'k' || key == 'K')) {
+    // adicionado da branch intelisprites: suporte para 'espaço' tbm soltar a bola
+    if (bola.statusPosse == 2 && (key == 'k' || key == 'K' || key == ' ')) {
         cliquesParaSoltar++;
     }
 }
@@ -455,12 +462,17 @@ void Game::atualizarIARival(){
             bool devePressionar = (i == rivalMaisProximo || i == segundoRivalMaisProximo) && distPraBola < 3.5f;
 
             if (distPraBola < 0.4f) {
-                bola.statusPosse = 2;
-                bola.idRival = i;
-                bola.velX = 0.0f;
-                bola.velY = 0.0f;
-                cliquesParaSoltar = 0;
-                cooldownPasseRival = 20;
+                // adicionado da branch intelisprites: verifica invencibilidade antes de roubar
+                if (tempoInvincibilidade > 0 && bola.statusPosse == 1) {
+                    // não rouba, a invencibilidade não permite
+                } else {
+                    bola.statusPosse = 2;
+                    bola.idRival = i;
+                    bola.velX = 0.0f;
+                    bola.velY = 0.0f;
+                    cliquesParaSoltar = 0;
+                    cooldownPasseRival = 20;
+                }
             } else if (devePressionar || distPraBola < 1.2f) {
                 moverJogadorPara(timeRival[i], bola.x, bola.y, 0.0030f, 0.08f);
             } else {
@@ -531,6 +543,28 @@ void Game::atualizarIATime(){
 
 // Atualiza a posição do jogador e da bola
 void Game::updatePlayer() {
+    // adicionado da branch intelisprites: contagem e respawn do power Up
+    if (tempoSpeedBoost > 0) tempoSpeedBoost--;
+    if (tempoInvincibilidade > 0) tempoInvincibilidade--;
+
+    if (!powerUp.active) {
+        spawnTimer++;
+        if (spawnTimer >= 300) { // depois de aprox 5s spawna oto
+            powerUp.spawn();
+            spawnTimer = 0;
+        }
+    } else {
+        // Checa se o aliado controlado colidiu com o powerup
+        if (powerUp.checkCollision(timeAliado[indiceJogador].x, timeAliado[indiceJogador].y)) {
+            if (powerUp.type == 1) {
+                tempoSpeedBoost = 2400; // 10 segundos a 60 fps (40s - 2400)
+            } else if (powerUp.type == 2) {
+                tempoInvincibilidade = 2400; // 10 segundos a 60 fps (tambem)
+            }
+            powerUp.active = false;
+        }
+    }
+
     float dirX = 0;
     float dirY = 0;
 
@@ -585,7 +619,8 @@ void Game::updatePlayer() {
         timeAliado[indiceJogador].setAndando(isMoving);
 
         // faz o jogador correr
-        float velocidadeJogador = 0.01f; 
+        // adicionado da branch intelisprites: aplica a nova velocidade drobada caso o speed boost esteja on
+        float velocidadeJogador = (tempoSpeedBoost > 0) ? 0.02f : 0.01f; 
         timeAliado[indiceJogador].x += dirX * velocidadeJogador;
         timeAliado[indiceJogador].y += dirY * velocidadeJogador;
     }
@@ -742,6 +777,12 @@ void Game::updatePlayer() {
     int statusGol = gol.resolverColisao(bola.x, bola.y, 0.1f);
     
     if (statusGol == 1) {
+        // adicionado da branch intelisprites: limpa os power up no reset do gol
+        powerUp.active = false;
+        spawnTimer = 0;
+        tempoSpeedBoost = 0;
+        tempoInvincibilidade = 0;
+
         scoreboard.scoreAliado();
         bola.x = 0.0f;
         bola.y = 0.0f;
@@ -768,6 +809,12 @@ void Game::updatePlayer() {
         }
         indiceJogador = 0;
     } else if (statusGol == 2) {
+        // adicionado da branch intelisprites: limpa os power up no reset do gol
+        powerUp.active = false;
+        spawnTimer = 0;
+        tempoSpeedBoost = 0;
+        tempoInvincibilidade = 0;
+
         // se o status for 2 pontua para a alemanha
         scoreboard.scoreRival();
         bola.x = 0.0f;
@@ -816,3 +863,4 @@ void Game::mousePassiveMotionCallback(int x, int y) { Game::getInstance()->mouse
 void Game::keyboardClickCallback(unsigned char key, int x, int y) { Game::getInstance()->keyboardClick(key, x, y); }
 void Game::keyboardUpCallback(unsigned char key, int x, int y) { Game::getInstance()->keyboardUp(key, x, y); }
 void Game::idleCallback() { Game::getInstance()->updatePlayer(); }
+}
