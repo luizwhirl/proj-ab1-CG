@@ -12,13 +12,17 @@ private:
     GLuint arquibancadaTextureC; 
     GLuint arquibancadaTextureD;
 
-    // ids das texturas dos torcedores separados por norte, sul e oeste
-    GLuint torcedorNorteIdleTexture;
-    GLuint torcedorNorteComemoraTexture;
-    GLuint torcedorSulIdleTexture;
-    GLuint torcedorSulComemoraTexture;
-    GLuint torcedorOesteIdleTexture;
-    GLuint torcedorOesteComemoraTexture;
+    // constante para o numero de variacoes de torcedores 
+    // azul, ray, manu, luca, indo, rosa
+    static const int NUM_TORCEDORES = 6;
+
+    // ids das texturas dos torcedores - arrays para suportar os 6 tipos
+    GLuint torcedorNorteIdleTexture[NUM_TORCEDORES];
+    GLuint torcedorNorteComemoraTexture[NUM_TORCEDORES];
+    GLuint torcedorSulIdleTexture[NUM_TORCEDORES];
+    GLuint torcedorSulComemoraTexture[NUM_TORCEDORES];
+    GLuint torcedorOesteIdleTexture[NUM_TORCEDORES];
+    GLuint torcedorOesteComemoraTexture[NUM_TORCEDORES];
 
     void drawCircle(float cx, float cy, float r, int num_segments);
     void drawFieldLines();

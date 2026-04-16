@@ -2,6 +2,7 @@
 #include <cmath>
 #include <cstdlib>
 #include <iostream>
+#include <string> // p facilitar a montagem dos caminhos das texturas
 
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
@@ -15,13 +16,15 @@ Campo::Campo() {
     arquibancadaTextureC = 0;
     arquibancadaTextureD = 0;
 
-    // inicialização dos ids norte, sul e oeste
-    torcedorNorteIdleTexture = 0;
-    torcedorNorteComemoraTexture = 0;
-    torcedorSulIdleTexture = 0;
-    torcedorSulComemoraTexture = 0;
-    torcedorOesteIdleTexture = 0;
-    torcedorOesteComemoraTexture = 0;
+    // inicialização dos ids norte, sul e oeste agora com loop para os arrays
+    for(int i = 0; i < NUM_TORCEDORES; i++) {
+        torcedorNorteIdleTexture[i] = 0;
+        torcedorNorteComemoraTexture[i] = 0;
+        torcedorSulIdleTexture[i] = 0;
+        torcedorSulComemoraTexture[i] = 0;
+        torcedorOesteIdleTexture[i] = 0;
+        torcedorOesteComemoraTexture[i] = 0;
+    }
 }
 
 void Campo::createGrassTexture() {
@@ -140,108 +143,42 @@ void Campo::loadArquibancadaTextures(const char* filepathA, const char* filepath
 
 // carrega texturas distintas para a torcida norte, sul e oeste
 void Campo::loadTorcedorTextures(const char* idleNortePath, const char* comemoraNortePath, const char* idleSulPath, const char* comemoraSulPath, const char* idleOestePath, const char* comemoraOestePath) {
-    int width, height, nrChannels;
-    
-    // torcedor norte idle
-    glGenTextures(1, &torcedorNorteIdleTexture);
-    glBindTexture(GL_TEXTURE_2D, torcedorNorteIdleTexture);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    
-    unsigned char *dataIdleNorte = stbi_load(idleNortePath, &width, &height, &nrChannels, 0);
-    if (dataIdleNorte) {
-        GLenum format = (nrChannels == 4) ? GL_RGBA : GL_RGB;
-        glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, dataIdleNorte);
-        stbi_image_free(dataIdleNorte);
-    } else {
-        std::cerr << "Falha ao carregar a textura idle do torcedor norte: " << idleNortePath << std::endl;
-    }
+    // criado os prefixos e diretorios para automatizar a leitura dos 6 torcedores
+    std::string prefixos[6] = {"azul", "ray", "manu", "luca", "indo", "rosa"};
+    std::string dirNorte = "assets/sprites/torcedor/norte/";
+    std::string dirSul = "assets/sprites/torcedor/sul/";
+    std::string dirOeste = "assets/sprites/torcedor/oeste/";
 
-    // torcedor norte comemorando
-    glGenTextures(1, &torcedorNorteComemoraTexture);
-    glBindTexture(GL_TEXTURE_2D, torcedorNorteComemoraTexture);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    
-    unsigned char *dataComemoraNorte = stbi_load(comemoraNortePath, &width, &height, &nrChannels, 0);
-    if (dataComemoraNorte) {
-        GLenum format = (nrChannels == 4) ? GL_RGBA : GL_RGB;
-        glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, dataComemoraNorte);
-        stbi_image_free(dataComemoraNorte);
-    } else {
-        std::cerr << "Falha ao carregar a textura comemora do torcedor norte: " << comemoraNortePath << std::endl;
-    }
+    // func lambda auxiliar para não repetir o bloco de carregamento 36 vezes
+    auto carregarTextura = [](const std::string& path, GLuint& texID) {
+        int width, height, nrChannels;
+        glGenTextures(1, &texID);
+        glBindTexture(GL_TEXTURE_2D, texID);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        
+        unsigned char *data = stbi_load(path.c_str(), &width, &height, &nrChannels, 0);
+        if (data) {
+            GLenum format = (nrChannels == 4) ? GL_RGBA : GL_RGB;
+            glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
+            stbi_image_free(data);
+        } else {
+            std::cerr << "Falha ao carregar a textura do torcedor: " << path << std::endl;
+        }
+    };
 
-    // torcedor sul idle
-    glGenTextures(1, &torcedorSulIdleTexture);
-    glBindTexture(GL_TEXTURE_2D, torcedorSulIdleTexture);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    
-    unsigned char *dataIdleSul = stbi_load(idleSulPath, &width, &height, &nrChannels, 0);
-    if (dataIdleSul) {
-        GLenum format = (nrChannels == 4) ? GL_RGBA : GL_RGB;
-        glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, dataIdleSul);
-        stbi_image_free(dataIdleSul);
-    } else {
-        std::cerr << "Falha ao carregar a textura idle do torcedor sul: " << idleSulPath << std::endl;
-    }
-
-    // torcedor sul comemorando
-    glGenTextures(1, &torcedorSulComemoraTexture);
-    glBindTexture(GL_TEXTURE_2D, torcedorSulComemoraTexture);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    
-    unsigned char *dataComemoraSul = stbi_load(comemoraSulPath, &width, &height, &nrChannels, 0);
-    if (dataComemoraSul) {
-        GLenum format = (nrChannels == 4) ? GL_RGBA : GL_RGB;
-        glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, dataComemoraSul);
-        stbi_image_free(dataComemoraSul);
-    } else {
-        std::cerr << "Falha ao carregar a textura comemora do torcedor sul: " << comemoraSulPath << std::endl;
-    }
-
-    // torcedor oeste idle
-    glGenTextures(1, &torcedorOesteIdleTexture);
-    glBindTexture(GL_TEXTURE_2D, torcedorOesteIdleTexture);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    
-    unsigned char *dataIdleOeste = stbi_load(idleOestePath, &width, &height, &nrChannels, 0);
-    if (dataIdleOeste) {
-        GLenum format = (nrChannels == 4) ? GL_RGBA : GL_RGB;
-        glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, dataIdleOeste);
-        stbi_image_free(dataIdleOeste);
-    } else {
-        std::cerr << "Falha ao carregar a textura idle do torcedor oeste: " << idleOestePath << std::endl;
-    }
-
-    // torcedor oeste comemorando
-    glGenTextures(1, &torcedorOesteComemoraTexture);
-    glBindTexture(GL_TEXTURE_2D, torcedorOesteComemoraTexture);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    
-    unsigned char *dataComemoraOeste = stbi_load(comemoraOestePath, &width, &height, &nrChannels, 0);
-    if (dataComemoraOeste) {
-        GLenum format = (nrChannels == 4) ? GL_RGBA : GL_RGB;
-        glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, dataComemoraOeste);
-        stbi_image_free(dataComemoraOeste);
-    } else {
-        std::cerr << "Falha ao carregar a textura comemora do torcedor oeste: " << comemoraOestePath << std::endl;
+    // carrega automaticamente todas as variações percorrendo os nomes
+    for(int i = 0; i < NUM_TORCEDORES; ++i) {
+        carregarTextura(dirNorte + prefixos[i] + "-idle.png", torcedorNorteIdleTexture[i]);
+        carregarTextura(dirNorte + prefixos[i] + "-comemora.png", torcedorNorteComemoraTexture[i]);
+        
+        carregarTextura(dirSul + prefixos[i] + "-idle.png", torcedorSulIdleTexture[i]);
+        carregarTextura(dirSul + prefixos[i] + "-comemora.png", torcedorSulComemoraTexture[i]);
+        
+        carregarTextura(dirOeste + prefixos[i] + "-idle.png", torcedorOesteIdleTexture[i]);
+        carregarTextura(dirOeste + prefixos[i] + "-comemora.png", torcedorOesteComemoraTexture[i]);
     }
 }
 
@@ -269,12 +206,6 @@ void Campo::drawArquibancada(bool isComemorando) {
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     
-    // define a textura baseada no estado do timer (sprites do norte)
-    if (isComemorando) {
-        glBindTexture(GL_TEXTURE_2D, torcedorNorteComemoraTexture);
-    } else {
-        glBindTexture(GL_TEXTURE_2D, torcedorNorteIdleTexture);
-    }
     glColor3f(1.0f, 1.0f, 1.0f);
 
     float tempo = glutGet(GLUT_ELAPSED_TIME) / 1000.0f; 
@@ -292,10 +223,21 @@ void Campo::drawArquibancada(bool isComemorando) {
     float startY = 6.66f; // fileira Y do di cima
     float endY = 7.0f;   // fileira Y do di cima
 
-    glBegin(GL_QUADS);
+    // glBegin/glEnd foram estao para DENTRO do laço, pois o OpenGL exige que o glBindTexture seja chamado FORA do glBegin
     for (int row = 0; row < numFileiras; ++row) {
         for (int col = 0; col < numQuadradinhos; ++col) {
             
+            // Define aleatoriamente qual torcedor é desenhado baseado numa pseudo-seed de col e row
+            int tipoTorcedor = abs(row * 7 + col * 13) % NUM_TORCEDORES;
+            
+            // define a textura baseada no estado do timer e tipoAleatorio (sprites do norte)
+            if (isComemorando) {
+                glBindTexture(GL_TEXTURE_2D, torcedorNorteComemoraTexture[tipoTorcedor]);
+            } else {
+                glBindTexture(GL_TEXTURE_2D, torcedorNorteIdleTexture[tipoTorcedor]);
+            }
+
+            glBegin(GL_QUADS);
             // interpola linearmente a posição de acordo com a coluna e fileira
             float x = startX + col * ((endX - startX) / (numQuadradinhos - 1));
             float y = startY + row * ((endY - startY) / (numFileiras - 1));
@@ -317,9 +259,9 @@ void Campo::drawArquibancada(bool isComemorando) {
             glTexCoord2f(1.0f, 0.0f); glVertex2f(qX + tam, qY - tam);
             glTexCoord2f(1.0f, 1.0f); glVertex2f(qX + tam, qY + tam);
             glTexCoord2f(0.0f, 1.0f); glVertex2f(qX - tam, qY + tam);
+            glEnd();
         }
     }
-    glEnd();
 
     // reativa a textura para o resto do campo funcionar normal
     glEnable(GL_TEXTURE_2D);
@@ -344,22 +286,26 @@ void Campo::drawArquibancada(bool isComemorando) {
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     
-    // define a textura baseada no estado do timer (sprites do SUL agora)
-    if (isComemorando) {
-        glBindTexture(GL_TEXTURE_2D, torcedorSulComemoraTexture);
-    } else {
-        glBindTexture(GL_TEXTURE_2D, torcedorSulIdleTexture);
-    }
     glColor3f(1.0f, 1.0f, 1.0f);
 
     // inverte as coordenadas em Y para colocar os sprites sobre o concreto da sul
     float startY_Sul = -6.66f; // fileira Y da sul
     float endY_Sul = -7.0f;    // fileira Y da sul
 
-    glBegin(GL_QUADS);
     for (int row = 0; row < numFileiras; ++row) {
         for (int col = 0; col < numQuadradinhos; ++col) {
             
+            // randomização baseada na seed
+            int tipoTorcedor = abs(row * 11 + col * 17) % NUM_TORCEDORES;
+            
+            // define a textura baseada no estado do timer e tipoAleatorio (sprites do SUL agora)
+            if (isComemorando) {
+                glBindTexture(GL_TEXTURE_2D, torcedorSulComemoraTexture[tipoTorcedor]);
+            } else {
+                glBindTexture(GL_TEXTURE_2D, torcedorSulIdleTexture[tipoTorcedor]);
+            }
+
+            glBegin(GL_QUADS);
             // interpola linearmente a posição
             float x = startX + col * ((endX - startX) / (numQuadradinhos - 1));
             float y = startY_Sul + row * ((endY_Sul - startY_Sul) / (numFileiras - 1));
@@ -380,9 +326,9 @@ void Campo::drawArquibancada(bool isComemorando) {
             glTexCoord2f(1.0f, 0.0f); glVertex2f(qX + tam, qY - tam);
             glTexCoord2f(1.0f, 1.0f); glVertex2f(qX + tam, qY + tam);
             glTexCoord2f(0.0f, 1.0f); glVertex2f(qX - tam, qY + tam);
+            glEnd();
         }
     }
-    glEnd();
 
     // reativa a textura normal para garantir que a leste/oeste apareça
     glEnable(GL_TEXTURE_2D);
@@ -409,11 +355,6 @@ void Campo::drawArquibancada(bool isComemorando) {
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     
-    if (isComemorando) {
-        glBindTexture(GL_TEXTURE_2D, torcedorOesteComemoraTexture);
-    } else {
-        glBindTexture(GL_TEXTURE_2D, torcedorOesteIdleTexture);
-    }
     glColor3f(1.0f, 1.0f, 1.0f);
 
     float startX_Leste = 3.83f; // fileira X mais perto (concreto começa em 3.5)
@@ -423,10 +364,20 @@ void Campo::drawArquibancada(bool isComemorando) {
     int numFileiras_Lat = 2;    // duas fileiras na lateral tambem
     int numQuadradinhos_Lat = 12; // mais quadrados para cobrir toda extensão da lateral
 
-    glBegin(GL_QUADS);
+    // randomização baseada na seed
     for (int row = 0; row < numFileiras_Lat; ++row) {
         for (int col = 0; col < numQuadradinhos_Lat; ++col) {
             
+            // randomização baseada na seed
+            int tipoTorcedor = abs(row * 19 + col * 23) % NUM_TORCEDORES;
+            
+            if (isComemorando) {
+                glBindTexture(GL_TEXTURE_2D, torcedorOesteComemoraTexture[tipoTorcedor]);
+            } else {
+                glBindTexture(GL_TEXTURE_2D, torcedorOesteIdleTexture[tipoTorcedor]);
+            }
+
+            glBegin(GL_QUADS);
             float x = startX_Leste + row * ((endX_Leste - startX_Leste) / (numFileiras_Lat - 1));
             float y = startY_Lat + col * ((endY_Lat - startY_Lat) / (numQuadradinhos_Lat - 1));
             
@@ -444,9 +395,9 @@ void Campo::drawArquibancada(bool isComemorando) {
             glTexCoord2f(0.0f, 0.0f); glVertex2f(qX + tam, qY - tam); // bottomRight recebe original bottomLeft
             glTexCoord2f(0.0f, 1.0f); glVertex2f(qX + tam, qY + tam); // topRight recebe original topLeft
             glTexCoord2f(1.0f, 1.0f); glVertex2f(qX - tam, qY + tam); // topLeft recebe original topRight
+            glEnd();
         }
     }
-    glEnd();
 
     // reativa a textura normal
     glEnable(GL_TEXTURE_2D);
@@ -473,20 +424,25 @@ void Campo::drawArquibancada(bool isComemorando) {
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     
-    if (isComemorando) {
-        glBindTexture(GL_TEXTURE_2D, torcedorOesteComemoraTexture);
-    } else {
-        glBindTexture(GL_TEXTURE_2D, torcedorOesteIdleTexture);
-    }
     glColor3f(1.0f, 1.0f, 1.0f);
 
     float startX_Oeste = -5.16f; // fileira X mais longe (concreto vai até -5.83)
     float endX_Oeste = -3.83f;   // fileira X mais perto (concreto começa em -3.5)
 
-    glBegin(GL_QUADS);
+    // randomização baseada na seed
     for (int row = 0; row < numFileiras_Lat; ++row) {
         for (int col = 0; col < numQuadradinhos_Lat; ++col) {
             
+            // randomização baseada na seed
+            int tipoTorcedor = abs(row * 29 + col * 31) % NUM_TORCEDORES;
+            
+            if (isComemorando) {
+                glBindTexture(GL_TEXTURE_2D, torcedorOesteComemoraTexture[tipoTorcedor]);
+            } else {
+                glBindTexture(GL_TEXTURE_2D, torcedorOesteIdleTexture[tipoTorcedor]);
+            }
+
+            glBegin(GL_QUADS);
             float x = startX_Oeste + row * ((endX_Oeste - startX_Oeste) / (numFileiras_Lat - 1));
             float y = startY_Lat + col * ((endY_Lat - startY_Lat) / (numQuadradinhos_Lat - 1));
             
@@ -504,9 +460,9 @@ void Campo::drawArquibancada(bool isComemorando) {
             glTexCoord2f(1.0f, 0.0f); glVertex2f(qX + tam, qY - tam);
             glTexCoord2f(1.0f, 1.0f); glVertex2f(qX + tam, qY + tam);
             glTexCoord2f(0.0f, 1.0f); glVertex2f(qX - tam, qY + tam);
+            glEnd();
         }
     }
-    glEnd();
 
     glDisable(GL_TEXTURE_2D);
 }
