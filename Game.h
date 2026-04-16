@@ -1,18 +1,44 @@
 #ifndef GAME_H
 #define GAME_H
 
+#include <vector>
 #include "Campo.h"
+#include "Gol.h"
 #include "Scoreboard.h"
 #include "InputManager.h"
+#include "Bola.h"
+#include "Jogador.h"
+#include "Goleiro.h"
+#include "PowerUp.h" 
 
 // Scene / Game State e Window / Context Manager
 class Game {
 private:
     int winW, winH;
-    
+    int indiceJogador = 0;
+    int cliquesParaSoltar = 0;
+    bool jogoIniciado = false;
+    int cooldownPasseRival = 0;
+
     Campo campo;
+    Gol gol;
     Scoreboard scoreboard;
     InputManager input;
+    Bola bola;
+    std::vector<Jogador> timeAliado;
+    std::vector<Jogador> timeRival;
+    Goleiro goleiro;
+    Goleiro goleiroRival; // di cima
+    Goleiro goleiroAliado;   // di baxo
+
+    // variáveis de controle para o sistema de poderzinho
+    PowerUp powerUp;
+    int tempoSpeedBoost = 0;
+    int tempoInvincibilidade = 0;
+    int spawnTimer = 0;
+
+    // controle dos 10 segundos da animação de comemoração da arquibancada
+    int tempoComemoracao = 0;
 
     static Game* instance;
 
@@ -25,7 +51,16 @@ public:
     void display();
     void reshape(int w, int h);
     void mouseClick(int button, int state, int x, int y);
-    void mousePassiveMotion(int x, int y);
+        
+    void keyboardClick(unsigned char key, int x, int y);
+    void keyboardUp(unsigned char key, int x, int y);
+    void updatePlayer();
+    void atualizarIARival();
+    void atualizarIATime();
+    float pitagoras(float, float);
+
+    // resolve a colisão física/sobreposição entre todos os jogadores em campo
+    void resolverColisoesJogadores();
 
     static Game* getInstance();
 
@@ -33,7 +68,10 @@ public:
     static void displayCallback();
     static void reshapeCallback(int w, int h);
     static void mouseClickCallback(int button, int state, int x, int y);
-    static void mousePassiveMotionCallback(int x, int y);
+        
+    static void keyboardClickCallback(unsigned char key, int x, int y);
+    static void keyboardUpCallback(unsigned char key, int x, int y);
+    static void idleCallback();
 };
 
 #endif

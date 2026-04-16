@@ -57,7 +57,7 @@ void Scoreboard::draw(int winW, int winH) {
         glVertex2i(startX, startY + h);
     glEnd();
 
-    // """"""""""""""bandeira"""""""""""""")
+    // """"""""""""""bandeira""""""""""""")
     glColor3f(0.0f, 0.6f, 0.0f);
     glBegin(GL_QUADS); glVertex2i(startX + 5, startY + 6); glVertex2i(startX + 28, startY + 6); glVertex2i(startX + 28, startY + 24); glVertex2i(startX + 5, startY + 24); glEnd();
     glColor3f(1.0f, 0.9f, 0.0f); 
@@ -106,49 +106,11 @@ void Scoreboard::draw(int winW, int winH) {
     endHUD();
 }
 
-// butaos de teste - placeholder 
-void Scoreboard::drawTestButtons(int winW, int winH) {
-    beginHUD(winW, winH);
-    
-    // eskerdo 
-    glColor3f(0.2f, 0.2f, 0.8f);
-    glBegin(GL_QUADS);
-        glVertex2i(margin, winH / 2 - btnH/2);
-        glVertex2i(margin + btnW, winH / 2 - btnH/2);
-        glVertex2i(margin + btnW, winH / 2 + btnH/2);
-        glVertex2i(margin, winH / 2 + btnH/2);
-    glEnd();
-    glColor3f(1.0f, 1.0f, 1.0f);
-    drawText(margin + 15, winH / 2 + 6, "+1");
-
-    // direito 👉👉
-    glColor3f(0.8f, 0.2f, 0.2f);
-        glBegin(GL_QUADS);
-        glVertex2i(winW - margin - btnW, winH / 2 - btnH/2);
-        glVertex2i(winW - margin, winH / 2 - btnH/2);
-        glVertex2i(winW - margin, winH / 2 + btnH/2);
-        glVertex2i(winW - margin - btnW, winH / 2 + btnH/2);
-    glEnd();
-    glColor3f(1.0f, 1.0f, 1.0f);
-    drawText(winW - margin - btnW + 15, winH / 2 + 6, "+1");
-
-    endHUD();
+void Scoreboard::scoreAliado() {
+    scoreLeft++;
 }
 
-bool Scoreboard::checkButtonLeftClick(int x, int y, int winW, int winH) {
-    if (x >= margin && x <= margin + btnW &&
-        y >= winH / 2 - btnH/2 && y <= winH / 2 + btnH/2) {
-        scoreLeft++;
-        return true;
-    }
-    return false;
-}
-
-bool Scoreboard::checkButtonRightClick(int x, int y, int winW, int winH) {
-    if (x >= winW - margin - btnW && x <= winW - margin &&
-        y >= winH / 2 - btnH/2 && y <= winH / 2 + btnH/2) {
-        scoreRight++;
-        return true;
-    }
-    return false;
+// vai se ferra aemanah
+void Scoreboard::scoreRival() {
+    scoreRight++;
 }

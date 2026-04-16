@@ -7,6 +7,17 @@ public:
     float mouseWorldX;
     float mouseWorldY;
 
+    bool isWPressed;
+    bool isAPressed;
+    bool isSPressed;
+    bool isDPressed;
+    bool isJPressed;
+    bool isKPressed;
+    bool isLPressed;
+    bool wasLPressed;
+    bool wasJPressed;
+    bool wasKPressed;
+
     InputManager();
     
     // convert a posição do mouse (em pixels) para o sistema de coordenadas do opengiló

@@ -4,6 +4,16 @@ InputManager::InputManager() {
     isZoomed = false;
     mouseWorldX = 0.0f;
     mouseWorldY = 0.0f;
+
+    isWPressed = false;
+    isAPressed = false;
+    isSPressed = false;
+    isDPressed = false;
+    isJPressed = false;
+    isKPressed = false;
+    isLPressed = false;
+    wasLPressed = false;
+    wasJPressed = false;
 }
 
 void InputManager::updateMouseWorldCoords(int x, int y, int winW, int winH) {
