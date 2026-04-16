@@ -1,4 +1,5 @@
 #include "Game.h"
+#include "SoundManager.h"
 #include <GL/glut.h>
 #include <cstdlib> // rand() e srand()
 #include <ctime>   // time()
@@ -217,6 +218,10 @@ void Game::init() {
     }
     goleiroRival.loadTexture();
     goleiroAliado.loadTexture();
+
+    // inicializa o gerenciador de som e toca o apito do arbritro
+    SoundManager::getInstance()->init();
+    SoundManager::getInstance()->playApito();
 }
 
 void Game::setupCamera() {
@@ -694,6 +699,9 @@ void Game::updatePlayer() {
         // torna a bola intocavel por uns frames durante o passe
         bola.framesIntocavel = 15;
 
+        // executa os sons de passe
+        SoundManager::getInstance()->playChute();
+
         // O passe nasce já apontado para o companheiro escolhido.
         float vectorX = (timeAliado[maisProx].x - timeAliado[indiceJogador].x)/menorDist;
         float vectorY = (timeAliado[maisProx].y - timeAliado[indiceJogador].y)/menorDist;
@@ -717,6 +725,10 @@ void Game::updatePlayer() {
     // dá o chutão 
     // verifica !input.wasKPressed para o jogador que receber a bola não chutar imediatamente de volta neh pai
     if (input.isKPressed && !input.wasKPressed && bola.statusPosse == 1) {
+
+        // som chute
+        SoundManager::getInstance()->playChute();
+
         bola.velX = 0.0f;
         bola.velY = 0.0f;
         switch (timeAliado[indiceJogador].lastDirection) {
@@ -815,6 +827,10 @@ void Game::updatePlayer() {
         tempoComemoracao = 600;
 
         scoreboard.scoreAliado();
+
+        // toca o som de comemoração quando o gol é feito
+        SoundManager::getInstance()->playGol();
+
         bola.x = 0.0f;
         bola.y = 0.0f;
         bola.velX = 0.0f; 
@@ -848,6 +864,10 @@ void Game::updatePlayer() {
 
         // se o status for 2 pontua para a alemanha
         scoreboard.scoreRival();
+
+        // toca o som de comemoração quando o gol é feito
+        SoundManager::getInstance()->playGol();
+
         bola.x = 0.0f;
         bola.y = 0.0f;
         bola.velX = 0.0f;
