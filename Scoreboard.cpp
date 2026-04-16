@@ -58,13 +58,11 @@ void Scoreboard::draw(int winW, int winH) {
     glEnd();
 
     // """"""""""""""bandeira""""""""""""")
-    glColor3f(0.0f, 0.6f, 0.0f);
+    glColor3f(1.0f, 0.0f, 0.0f); 
     glBegin(GL_QUADS); glVertex2i(startX + 5, startY + 6); glVertex2i(startX + 28, startY + 6); glVertex2i(startX + 28, startY + 24); glVertex2i(startX + 5, startY + 24); glEnd();
-    glColor3f(1.0f, 0.9f, 0.0f); 
-    glBegin(GL_QUADS); glVertex2i(startX + 10, startY + 10); glVertex2i(startX + 23, startY + 10); glVertex2i(startX + 23, startY + 20); glVertex2i(startX + 10, startY + 20); glEnd();
 
     glColor3f(0.0f, 0.0f, 0.0f);
-    drawText(startX + 35, startY + 21, "BRA");
+    drawText(startX + 35, startY + 21, "CHQ");
 
     // seção central do placa r - azul
     glColor3f(0.2f, 0.5f, 0.8f);
@@ -91,17 +89,13 @@ void Scoreboard::draw(int winW, int winH) {
     glEnd();
 
     glColor3f(0.0f, 0.0f, 0.0f);
-    drawText(startX + 155, startY + 21, "ALE");
+    drawText(startX + 155, startY + 21, "RIV");
 
     // """"""""""""bandeira""""""""""""
     int fX = startX + 198;
     int fY = startY + 6;
-    glColor3f(0.0f, 0.0f, 0.0f);
-    glBegin(GL_QUADS); glVertex2i(fX, fY); glVertex2i(fX + 23, fY); glVertex2i(fX + 23, fY + 6); glVertex2i(fX, fY + 6); glEnd();
-    glColor3f(0.8f, 0.0f, 0.0f);
-    glBegin(GL_QUADS); glVertex2i(fX, fY + 6); glVertex2i(fX + 23, fY + 6); glVertex2i(fX + 23, fY + 12); glVertex2i(fX, fY + 12); glEnd();
-    glColor3f(1.0f, 0.8f, 0.0f);
-    glBegin(GL_QUADS); glVertex2i(fX, fY + 12); glVertex2i(fX + 23, fY + 12); glVertex2i(fX + 23, fY + 18); glVertex2i(fX, fY + 18); glEnd();
+    glColor3f(0.0f, 0.0f, 0.5f);
+    glBegin(GL_QUADS); glVertex2i(fX, fY); glVertex2i(fX + 23, fY); glVertex2i(fX + 23, fY + 18); glVertex2i(fX, fY + 18); glEnd();
 
     endHUD();
 }

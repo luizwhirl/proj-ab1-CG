@@ -233,12 +233,15 @@ void Game::setupCamera() {
     float left, right, bottom, top;
 
     // calculo do limite da camera
-    if (winW <= winH) {
+    // se o aspect ratio passar da proporção original (0.75f, que é 600/800)
+    // fixa a altura visível em 8.0 para garantir que as arquibancadas não sejam cortadas
+    if (aspect <= 0.75f) {
         left = -size; right = size;
         bottom = -size / aspect; top = size / aspect;
     } else {
-        left = -size * aspect; right = size * aspect;
-        bottom = -size; top = size;
+        float sizeY = 8.0f; // fixa a altura limite equivalente ao topo original da janela para nao cortar a arena
+        left = -sizeY * aspect; right = sizeY * aspect;
+        bottom = -sizeY; top = sizeY;
     }
 
     // pensando em alterar esse zoom aqui hein
