@@ -1,69 +1,92 @@
 # Projeto AB1 Computação Gráfica
 
-Este é o repositório do "Futebol do Chiquinho", uma aplicação interativa desenvolvida em C++ com OpenGL/GLUT. O foco aqui é a renderização procedural do mundo, manipulação de matrizes de projeção e a ponte entre o paradigma Orientado a Objetos e funções procedurais.
+Este é o repositório do "Futebolzinho do Chiquinho", uma aplicação interativa desenvolvida em C++ com OpenGL/GLUT. O foco aqui é a renderização procedural do mundo, manipulação de matrizes de projeção, implementação de Inteligência Artificial básica, detecção de colisões e a ponte entre o paradigma Orientado a Objetos e funções procedurais.
+
+---
+
+## Controles do Jogo
+
+- **W, A, S, D:** Movimenta o jogador atual (se estiver com a bola, conduz; se estiver sem, anda livremente).
+- **J:** Toca a bola para o aliado mais próximo.
+- **K:** Chuta a bola em direção ao gol (quando com a bola) ou dá o bote/rouba a bola (quando sem a posse).
+- **L:** Troca o controle para o próximo jogador do seu time.
+- **Espaço:** Alternativa para roubar/fazer o rival soltar a bola.
+- **Botão Esquerdo do Mouse:** Ativa/Desativa o Zoom Dinâmico da câmera.
 
 ---
 
 ## Estrutura de Diretórios e Arquivos
 
-O código foi arquitetado para separar responsabilidades lógicas e visuais. Abaixo está a explicação do que cada módulo faz sob o capô:
+O código foi arquitetado para separar responsabilidades lógicas, físicas e visuais. Abaixo está a explicação do que cada módulo faz sob o capô:
 
 **`main.cpp` (Ponto de Entrada)**
-É aqui que a mágica começa. O arquivo é responsável por inicializar o contexto do GLUT, instanciar a janela do sistema operacional e registrar as funções de callback. Para manter o código limpo, todas essas chamadas são delegadas imediatamente para a classe `Game`.
+É aqui que a mágica começa. O arquivo é responsável por inicializar o contexto do GLUT, instanciar a janela do sistema operacional e registrar as funções de callback. Todas essas chamadas são delegadas imediatamente para a classe `Game`.
 
 **`Game` (O Motor)**
-Atua como o gerenciador central (Engine) do projeto. Ele controla o loop principal de renderização, o framerate e o estado global da aplicação.
+Atua como o gerenciador central (Engine) do projeto. Ele controla o loop principal de renderização, framerate, a Inteligência Artificial, as colisões e o estado global da aplicação (posse de bola, times, goleiros e interações gerais).
 
-**`Campo` (Renderização do Mundo 2D)**
-Este módulo cuida de tudo que diz respeito ao gramado. Ele gera a textura procedural da grama, desenha as faixas do campo de futebol, calcula o mapeamento de textura (UV mapping) e renderiza as linhas de marcação e áreas geométricas.
+**`Jogador` e `Goleiro` (Entidades)**
+Representam os "atores" em campo. Cada jogador carrega sua própria textura, direção de olhar (W, A, S, D), posição base (para manter a formação) e lida com animações de caminhada. Os Goleiros possuem uma lógica de patrulha na linha do gol.
+
+**`Bola` (Física e Posse)**
+A classe responsável por guardar o estado da partida. Ela sabe se está rolando livre (com inércia e atrito), se está nos pés do time aliado ou sendo dominada pela IA rival.
+
+**`PowerUp` (Itens Especiais)**
+Um sistema de itens dinâmicos que surgem aleatoriamente no campo. Fornecem *Speed Boost* (bota) ou *Invencibilidade* (escudo) temporária ao jogador que os coletar.
+
+**`Campo` e `Gol` (O Mundo 2D)**
+Este módulo cuida de tudo que diz respeito à arena. Gera a textura procedural da grama, gerencia as colisões das bordas e renderiza as arquibancadas (que reagem e "comemoram" aos gols marcados).
 
 **`Scoreboard` (A Interface/HUD)**
-Responsável por renderizar a camada de interface (HUD) que fica sobreposta ao jogo. Ele desenha os placares, as bandeiras e gerencia os botões interativos na tela. 
->*Nota: Os botões atuais são apenas placeholders para testar o placar e serão removidos/refeitos no futuro.*
+Responsável por renderizar a camada de interface (HUD) que fica sobreposta ao jogo. Desenha os placares do Brasil e da Alemanha.
 
-**`InputManager` (Interação e Câmera)**
-O cérebro por trás dos controles. Ele captura os eventos de clique e movimento do mouse, gerencia o estado de zoom da câmera e faz a conversão matemática pesada das coordenadas de Tela (Pixels do seu monitor) para coordenadas de Mundo (Sistema Cartesiano do OpenGL).
+**`InputManager` (Interação)**
+O cérebro por trás dos controles. Captura os eventos de clique, teclado (press/release) e faz a conversão matemática pesada das coordenadas de Tela para o Sistema Cartesiano do OpenGL.
+
+**`SoundManager` (Áudio)**
+Gerencia os efeitos sonoros da partida, como o apito do árbitro inicial, os barulhos de chute e as explosões de comemoração da torcida durante os gols, utilizando a engine irrKlang.
 
 ---
 
 ## Conceitos de C++ Aplicados
 
-
 **Separação em `.h` (Interface) e `.cpp` (Implementação)**
-Os arquivos `.h` (Headers) funcionam como contratos: eles declaram quais variáveis e métodos a classe possui, sem escrever a lógica. Isso acelera a compilação, pois outros módulos só precisam ler essa "planta baixa". Já os arquivos `.cpp` incluem seus respectivos headers e implementam a lógica de fato (matemática, renderização, regras de negócio).
+Os arquivos `.h` (Headers) funcionam como contratos: eles declaram quais variáveis e métodos a classe possui. Já os arquivos `.cpp` incluem seus respectivos headers e implementam a lógica de fato (matemática, renderização, regras de negócio).
 
 **Include Guards**
-Em todos os arquivos `.h` (ex: `#ifndef`, `#define`, `#endif`), utilizamos Include Guards. Como um header pode ser incluído por múltiplos `.cpp`, essas guardas garantem que o compilador leia a declaração da classe apenas uma vez, evitando erros fatais de redefinição de classe (violação da Regra de Definição Única).
+Em todos os arquivos `.h` (ex: `#ifndef`, `#define`, `#endif`), utilizamos Include Guards. Como um header pode ser incluído por múltiplos `.cpp`, essas guardas garantem que o compilador leia a declaração da classe apenas uma vez, evitando erros fatais de redefinição de classe.
 
 ---
 
-## ⚙️ Arquitetura do Sistema e Lógica de Implementação
+## Arquitetura do Sistema e Lógica de Implementação
 
 ### 1. Game e o Padrão Singleton
-Como a biblioteca GLUT foi escrita em C puro, suas funções de callback (como `glutDisplayFunc`) exigem ponteiros para funções globais e não aceitam métodos de instância de classes C++ diretamente. Para resolver isso (graças aos ensinamentos do Baldoino), a classe `Game` utiliza o padrão **Singleton**. Ela possui uma única instância global acessível via `Game::getInstance()` e expõe métodos estáticos que servem de ponte, chamando os métodos reais da instância e unindo o GLUT ao nosso ecossistema de Orientação a Objetos.
+Como a biblioteca GLUT foi escrita em C puro, suas funções de callback exigem ponteiros para funções globais e não aceitam métodos de instância de classes C++ diretamente. Para resolver isso (graças aos ensinamentos do Baldoino), a classe `Game` utiliza o padrão **Singleton** (`Game::getInstance()`) e expõe métodos estáticos que servem de ponte para o GLUT.
 
-### 2. Geração Procedural do Campo
-O campo não é uma imagem estática importada, mas sim gerado matematicamente na memória durante a inicialização.
-* **Textura da Grama:** Um array de 128x128 pixels é alocado. O código escolhe aleatoriamente tons de verde para cada pixel, criando uma textura que é enviada para a VRAM usando o filtro `GL_NEAREST` para garantir um visual rígido e pixelado.
-* **Efeito de Corte:** O gramado é dividido em 11 quadriláteros (`GL_QUADS`) horizontais. O código altera a cor base dos vértices (que multiplica a cor da textura) para criar o visual de faixas claras e escuras (simulando a grama cortada de estádio).
-* **Mapeamento Contínuo:** A matemática do mapeamento UV (`vBase` e `vTopo`) garante que a textura se repita 15 vezes no eixo Y de forma perfeitamente contínua, sem "quebrar" visualmente na divisão dos quadriláteros.
+### 2. Sistema de IA e Formação Tática (4-4-2)
+O jogo possui dois times em campo posicionados em uma clássica formação 4-4-2. A Inteligência Artificial avalia a situação do jogo a cada frame:
+* **Perseguição Dinâmica:** Em vez de todos os bonecos correrem atrás da bola como em um futebol de várzea, o algoritmo calcula as distâncias (via Teorema de Pitágoras) e envia apenas os dois jogadores mais próximos para dar o bote. O resto da equipe se movimenta de forma relativa à sua posição base para fechar espaços.
+* **Tomada de Decisão do Rival:** Se a máquina é pressionada, ela calcula o "Score" de passe. O passe avalia a distância dos companheiros, proximidade do gol e marcação adversária, escolhendo a melhor opção para tocar a bola ou, caso livre, conduzir para finalização.
 
-### 3. Scoreboard e Projeção Ortogonal
-A interface de placar é desenhada *por cima* do mundo 3D/2D usando técnicas de sobreposição.
-* **Camada HUD:** O método salva a matriz da câmera atual (`glPushMatrix`) e reseta a projeção utilizando `glOrtho`. Os limites da projeção são configurados para coincidir exatamente com os pixels da janela do sistema (onde 0,0 é o topo-esquerdo). Após desenhar o placar em 2D, a matriz do mundo é restaurada (`glPopMatrix`).
-* **Hitboxes em Tempo Real:** O placar possui botões de teste cujas colisões são validadas a cada clique do usuário. Se as coordenadas do mouse (em pixels) baterem com a área do botão, os placares (que começam no clássico 1x7) são atualizados.
+### 3. Física de Colisão
+Um sistema de "Hitboxes" circulares está ativo 100% do tempo.
+* **Repulsão Física:** A função `resolverColisoesJogadores()` checa a distância entre absolutamente todos os jogadores em campo. Se a distância entre dois centros for menor que o limite, o vetor de sobreposição é calculado e ambos os objetos são matematicamente "empurrados" para direções opostas, impedindo que os sprites se atravessem.
 
-### 4. InputManager e a Matemática do Zoom
-* **Conversão Screen-to-World:** Monitores enxergam de (0,0) até a resolução máxima, mas o OpenGL enxerga um plano cartesiano com limites arbitrários. O método calcula o *Aspect Ratio* da janela e mapeia linearmente onde o clique ocorreu, invertendo o eixo Y (já que monitores crescem para baixo e o OpenGL para cima).
-* **Câmera Dinâmica:** Quando o zoom é ativado, a projeção `glOrtho` é recalculada. O código reduz o campo de visão para 35% do tamanho original e centraliza a tela exatamente na coordenada matemática de mundo onde o cursor do mouse estava apontando.
+### 4. Geração Procedural do Campo
+O campo não é uma imagem estática importada, mas sim gerado matematicamente na memória durante a inicialização. Um array de 128x128 escolhe tons de verde aleatórios para simular grama com filtro `GL_NEAREST`. O gramado é desenhado usando múltiplos `GL_QUADS` que modificam a cor de base para simular os cortes verticais de estádio.
+
+### 5. Câmera Dinâmica (Zoom Inteligente)
+Quando o zoom é ativado pelo mouse, a projeção ortogonal (`glOrtho`) é recalculada em tempo real para focar exatamente no calor da jogada. O sistema rastreia de quem é a "Posse" atual. Se um aliado tem a bola, foca nele; se um rival roubou, a câmera o acompanha; se a bola está livre (status 0), a câmera foca nas coordenadas x/y da própria bola.
+
+### 6. Scoreboard e Projeção Ortogonal HUD
+A interface de placar é desenhada *por cima* do mundo 2D utilizando `glPushMatrix` e `glOrtho` focado nas dimensões literais da tela. Os limites da projeção coincidem com os pixels da janela (0,0 no topo-esquerdo).
 
 ---
 
 ## Notas sobre Áudio e Dependências
 
-Para a compilação padrão, as bibliotecas do OpenGL (`-lfreeglut -lopengl32 -lglu32`) são suficientes.
+Para a compilação, além das bibliotecas padrão do OpenGL (`-lfreeglut -lopengl32 -lglu32`), o projeto depende do **irrKlang** para a engine de áudio.
 
-A compilação envolve áudio habilitado, então o projeto depende da biblioteca **irrKlang**. Nesse caso, é necessário linkar a biblioteca estática durante a compilação:
-`g++ *.cpp ./irrKlang/lib/Win32-gcc/libirrKlang.a -o main.exe -I./irrKlang/include -lopengl32 -lglu32 -lfreeglut`
-
-*Atenção: O executável final exige que as bibliotecas dinâmicas `ikpMP3.dll` e `irrKlang.dll` estejam na mesma pasta para funcionar corretamente.*
+É necessário linkar a biblioteca estática durante a compilação. Um exemplo de compilação com g++ (MinGW):
+```bash
+g++ *.cpp ./irrKlang/lib/Win32-gcc/libirrKlang.a -o main.exe -I./irrKlang/include -lopengl32 -lglu32 -lfreeglut
