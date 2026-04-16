@@ -1,77 +1,69 @@
-# Projeto AB1 Computação Gráfica: Futibas da resenha
+# Projeto AB1 Computação Gráfica
+
+Este é o repositório do "Futebol do Chiquinho", uma aplicação interativa desenvolvida em C++ com OpenGL/GLUT. O foco aqui é a renderização procedural do mundo, manipulação de matrizes de projeção e a ponte entre o paradigma Orientado a Objetos e funções procedurais.
+
 ---
-
-### sem muito papinho, pro audio use o comando 
-```
-g++ *.cpp ./irrKlang/lib/Win32-gcc/libirrKlang.a -o main.exe -I./irrKlang/include -lopengl32 -lglu32 -lfreeglut
-```
-se quiser rodar com audio.
-Se garanta que ipkMP3.dll e irrKlang.dll (ambos em irrKlang\bin\win32-gcc\) estejam no mesmo diretório que main.exe.
-#### Ah indiano mas cade o readme bonitinho???
-![eu](https://www.zapfigurinhas.com/img/webp/iTixSg2.webp)
-
 
 ## Estrutura de Diretórios e Arquivos
 
-O código atualmente tá dividido nos seguintes módulos principais:
+O código foi arquitetado para separar responsabilidades lógicas e visuais. Abaixo está a explicação do que cada módulo faz sob o capô:
 
-* **`main.cpp`**: Ponto de entrada da aplicação. Inicializa o contexto do GLUT, cria a janela e registra as funções de callback delegando-as para a classe `Game`.
-* **`Game (.h/.cpp)`**: Gerenciador central (Engine). Controla o loop principal de renderização e o estado global da aplicação.
-* **`Campo (.h/.cpp)`**: Responsável por toda a renderização do mundo 2D (textura do gramado, linhas de marcação, áreas geométricas).
-* **`Scoreboard (.h/.cpp)`**: Responsável pela renderização do HUD, ele renderiza placares e lida com os "botões" interativos na tela.
-    > PS: Esses botões são só um placeholder pra gente testar o placar, eles depois vao pros caraio
-* **`InputManager (.h/.cpp)`**: Lida com eventos de mouse, estado de zoom e a conversão crítica de coordenadas de Tela (Pixels) para coordenadas de Mundo (OpenGL).
+**`main.cpp` (Ponto de Entrada)**
+É aqui que a mágica começa. O arquivo é responsável por inicializar o contexto do GLUT, instanciar a janela do sistema operacional e registrar as funções de callback. Para manter o código limpo, todas essas chamadas são delegadas imediatamente para a classe `Game`.
 
-#### Arquivos de Cabeçalho (`.h`) vs. Código-Fonte (`.cpp`)
+**`Game` (O Motor)**
+Atua como o gerenciador central (Engine) do projeto. Ele controla o loop principal de renderização, o framerate e o estado global da aplicação.
 
-Eu não sei se precisa explicar isso, mas achei interessante incluir: Quase toda classe do projeto possui um par de arquivos: um `.h` (Header) e um `.cpp` (Source). 
+**`Campo` (Renderização do Mundo 2D)**
+Este módulo cuida de tudo que diz respeito ao gramado. Ele gera a textura procedural da grama, desenha as faixas do campo de futebol, calcula o mapeamento de textura (UV mapping) e renderiza as linhas de marcação e áreas geométricas.
 
-Essa divisão existe por motivos arquiteturais e de como o compilador do C++ funciona:
+**`Scoreboard` (A Interface/HUD)**
+Responsável por renderizar a camada de interface (HUD) que fica sobreposta ao jogo. Ele desenha os placares, as bandeiras e gerencia os botões interativos na tela. 
+>*Nota: Os botões atuais são apenas placeholders para testar o placar e serão removidos/refeitos no futuro.*
 
-* **Arquivos `.h` (A Interface / O "O Que"):** Os arquivos de cabeçalho contêm apenas as **declarações**. Eles funcionam como um "contrato" ou um sumário da classe. Neles, definimos quais variáveis a classe possui e quais métodos ela disponibiliza (suas assinaturas), mas sem escrever a lógica interna deles. 
-  * *Vantagem:* Quando outro arquivo (como o `main.cpp`) precisa usar a classe `Game`, ele só precisa fazer o `#include "Game.h"`. O compilador apenas lê a "planta baixa" da classe para saber quanto de memória alocar e quais métodos existem, acelerando muito a compilação de projetos grandes.
-
-* **Arquivos `.cpp` (A Implementação / O "Como"):** Uma vez que a gente tira isso da frente, a gente já pode começar a brincar: O arquivo `.cpp` faz o `#include` do seu `.h` relativo e escreve o corpo dos métodos. É onde a lógica de renderização, matemática e regras de negócio estão programadas.
-
-* **Include Guards (`#ifndef`, `#define`, `#endif`):**
-  Em todos os nossos arquivos `.h` (como no `InputManager.h`), você vai ver essas  três linhas encapsulando o código. Essas porras são os Include Guardsdo código . Como um `.h` pode ser incluído por vários arquivos `.cpp` diferentes, essas guardas garantem que o compilador leia a declaração da classe apenas **uma vez** por ciclo de compilação, prevenindo erros fatais de "redefinição de classe" (violação da Regra de Definição Única / ODR).
+**`InputManager` (Interação e Câmera)**
+O cérebro por trás dos controles. Ele captura os eventos de clique e movimento do mouse, gerencia o estado de zoom da câmera e faz a conversão matemática pesada das coordenadas de Tela (Pixels do seu monitor) para coordenadas de Mundo (Sistema Cartesiano do OpenGL).
 
 ---
 
-## Arquitetura do Sistema e Lógica de Implementação
+## Conceitos de C++ Aplicados
 
-### 1. Motor Principal: `Game` (Padrão Singleton)
-A classe `Game` é a nossa classe principal, já que é ela a orquestradora do projeto. 
-* **Probleminha do GLUT com C++:** Como o  GLUT é uma biblioteca escrita em C puro, então as funções de callback (como `glutDisplayFunc`) esperam ponteiros de funções globais ou estáticas, e não acietam métodos de instância de uma classe (pois métodos de instância possuem um parâmetro implícito `this`).
-* **A Solução:** Como a gente aprendeu com Baldoino, `Game` foi implementada usando o padrão **Singleton** (acessível via `Game::getInstance()`). Ela expõe métodos estáticos (ex: `Game::displayCallback()`) que simplesmente chamam os métodos da instância única, servindo como uma ponte entre o mundo procedural do GLUT e o ecossistema do POO.
 
-### 2. Renderização do Mundo: `Campo`
-Como a gente tem que desenhar o campo, então ele uma imagem importada. Ele é gerado proceduralmente no momento da inicialização.
-* **Textura Procedural da Grama:** O método `createGrassTexture()` aloca um array de 128x128 pixels em memória. Ele itera por cada pixel, escolhendo aleatoriamente (`rand() % 4`) uma entre quatro cores de uma paleta de tons de verde. Essa textura é então enviada para a VRAM via `glTexImage2D` usando filtros `GL_NEAREST` para manter o aspecto "pixelado/rígido" e configurada para se repetir (`GL_REPEAT`).
-* **Efeito "Corte de Grama":** Para simular aquele efeito de gramado de estádio cortado em faixas, o campo é desenhado utilizando 11 quadriláteros (`GL_QUADS`) horizontais empilhados. Alterna-se as cores dos vértices (`glColor3f` atuando como multiplicador da textura): faixas pares recebem cor branca (1.0) mantendo a textura original, faixas ímpares recebem uma cor ligeiramente escurecida (0.85, 0.90, 0.85).
-* **Mapeamento UV Contínuo:** As coordenadas `vBase` e `vTopo` da textura são calculadas matematicamente para que a textura não "quebre" na transição entre uma faixa e outra, repetindo-se exatamente 15 vezes (`repeats = 15.0f`) ao longo do eixo Y.
+**Separação em `.h` (Interface) e `.cpp` (Implementação)**
+Os arquivos `.h` (Headers) funcionam como contratos: eles declaram quais variáveis e métodos a classe possui, sem escrever a lógica. Isso acelera a compilação, pois outros módulos só precisam ler essa "planta baixa". Já os arquivos `.cpp` incluem seus respectivos headers e implementam a lógica de fato (matemática, renderização, regras de negócio).
 
-### 3. Interface de Usuário: `Scoreboard` (HUD Overlay)
-A interface é uma camada 2D desenhada *por cima* do campo 3D/ortogonal.
-* **Técnica de Projeção HUD:** O método `beginHUD()` salva a matriz atual (`glPushMatrix`) e reseta a projeção da câmera via `glOrtho(0, winW, winH, 0, -1.0, 1.0)`. Isso transforma o sistema de coordenadas temporariamente para coincidir com os **pixels exatos da janela**, onde (0,0) é o topo-esquerdo. Após renderizar placares e bandeiras feitas com `GL_QUADS`, o `endHUD()` restaura a matriz (`glPopMatrix`), devolvendo a configuração da câmera do mundo do jogo.
-* **Interatividade (Hitboxes):** O placar possui botões de teste cujas colisões são checadas em tempo real pelas funções `checkButtonLeftClick` e `checkButtonRightClick`. Quando o usuário clica, se as coordenadas X e Y do mouse (em pixels) estiverem dentro das "caixas delimitadoras" dos botões, os valores `scoreLeft` ou `scoreRight` (que iniciam no icônico 1x7) são incrementados.
-
-### 4. Interação e Sistema de Câmera: `InputManager` e Zoom
-> **NOTA:** O sistema de câmera vai mudar, então considere essa explicação abaixo somente para como está funcionando HOJE ()
-  
-O sistema de zoom é a feature mais complexa matematicamente. Ele permite clicar em um ponto do campo e ampliar a visão exatamente centrada naquele local do clique.
-* **Screen-to-World Space:** A janela do Windows/Linux entende cliques em "pixels" de (0,0) até (600, 800). O OpenGL enxerga um mundo ortogonal de -size até +size. O método `updateMouseWorldCoords()` recalcula a relação de aspecto (Aspect Ratio) e mapeia linearmente a posição X do clique (em %) para o range delimitado do campo. O eixo Y é invertido manualmente, pois a janela do SO cresce para baixo, enquanto o plano cartesiano clássico do OpenGL cresce para cima.
-* **Lógica da Câmera (glOrtho):** No método `Game::setupCamera()`, se a flag `isZoomed` do `InputManager` for verdadeira, a câmera recalcula os limites `left`, `right`, `bottom`, e `top`. Ela pega as coordenadas de mundo salvas no passo anterior, calcula um campo de visão reduzido (fator de 0.35f, ou seja, 35% do tamanho original) e centraliza a projeção de exibição ao redor da coordenada exata onde o mouse estava mirando.
+**Include Guards**
+Em todos os arquivos `.h` (ex: `#ifndef`, `#define`, `#endif`), utilizamos Include Guards. Como um header pode ser incluído por múltiplos `.cpp`, essas guardas garantem que o compilador leia a declaração da classe apenas uma vez, evitando erros fatais de redefinição de classe (violação da Regra de Definição Única).
 
 ---
 
-## Compilação (Exemplo com GCC/MinGW no Windows)
+## ⚙️ Arquitetura do Sistema e Lógica de Implementação
 
-Tenha certeza que vocÇe tá no diretório correto (pasta `proj-ab1-CG/`) via terminal e execute a linkagem de todos os módulos de classe:
+### 1. Game e o Padrão Singleton
+Como a biblioteca GLUT foi escrita em C puro, suas funções de callback (como `glutDisplayFunc`) exigem ponteiros para funções globais e não aceitam métodos de instância de classes C++ diretamente. Para resolver isso (graças aos ensinamentos do Baldoino), a classe `Game` utiliza o padrão **Singleton**. Ela possui uma única instância global acessível via `Game::getInstance()` e expõe métodos estáticos que servem de ponte, chamando os métodos reais da instância e unindo o GLUT ao nosso ecossistema de Orientação a Objetos.
 
-```bash
-g++ *.cpp -o main.exe -lfreeglut -lopengl32 -lglu32
+### 2. Geração Procedural do Campo
+O campo não é uma imagem estática importada, mas sim gerado matematicamente na memória durante a inicialização.
+* **Textura da Grama:** Um array de 128x128 pixels é alocado. O código escolhe aleatoriamente tons de verde para cada pixel, criando uma textura que é enviada para a VRAM usando o filtro `GL_NEAREST` para garantir um visual rígido e pixelado.
+* **Efeito de Corte:** O gramado é dividido em 11 quadriláteros (`GL_QUADS`) horizontais. O código altera a cor base dos vértices (que multiplica a cor da textura) para criar o visual de faixas claras e escuras (simulando a grama cortada de estádio).
+* **Mapeamento Contínuo:** A matemática do mapeamento UV (`vBase` e `vTopo`) garante que a textura se repita 15 vezes no eixo Y de forma perfeitamente contínua, sem "quebrar" visualmente na divisão dos quadriláteros.
 
-e abra o bicho com
+### 3. Scoreboard e Projeção Ortogonal
+A interface de placar é desenhada *por cima* do mundo 3D/2D usando técnicas de sobreposição.
+* **Camada HUD:** O método salva a matriz da câmera atual (`glPushMatrix`) e reseta a projeção utilizando `glOrtho`. Os limites da projeção são configurados para coincidir exatamente com os pixels da janela do sistema (onde 0,0 é o topo-esquerdo). Após desenhar o placar em 2D, a matriz do mundo é restaurada (`glPopMatrix`).
+* **Hitboxes em Tempo Real:** O placar possui botões de teste cujas colisões são validadas a cada clique do usuário. Se as coordenadas do mouse (em pixels) baterem com a área do botão, os placares (que começam no clássico 1x7) são atualizados.
 
-./main.exe 
+### 4. InputManager e a Matemática do Zoom
+* **Conversão Screen-to-World:** Monitores enxergam de (0,0) até a resolução máxima, mas o OpenGL enxerga um plano cartesiano com limites arbitrários. O método calcula o *Aspect Ratio* da janela e mapeia linearmente onde o clique ocorreu, invertendo o eixo Y (já que monitores crescem para baixo e o OpenGL para cima).
+* **Câmera Dinâmica:** Quando o zoom é ativado, a projeção `glOrtho` é recalculada. O código reduz o campo de visão para 35% do tamanho original e centraliza a tela exatamente na coordenada matemática de mundo onde o cursor do mouse estava apontando.
+
+---
+
+## Notas sobre Áudio e Dependências
+
+Para a compilação padrão, as bibliotecas do OpenGL (`-lfreeglut -lopengl32 -lglu32`) são suficientes.
+
+A compilação envolve áudio habilitado, então o projeto depende da biblioteca **irrKlang**. Nesse caso, é necessário linkar a biblioteca estática durante a compilação:
+`g++ *.cpp ./irrKlang/lib/Win32-gcc/libirrKlang.a -o main.exe -I./irrKlang/include -lopengl32 -lglu32 -lfreeglut`
+
+*Atenção: O executável final exige que as bibliotecas dinâmicas `ikpMP3.dll` e `irrKlang.dll` estejam na mesma pasta para funcionar corretamente.*
