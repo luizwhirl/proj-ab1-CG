@@ -221,14 +221,21 @@ void Campo::drawArquibancada(bool isComemorando) {
     float startX = -2.8f; 
     float endX = 2.8f;    
     float startY = 6.66f; // fileira Y do di cima
-    float endY = 7.0f;   // fileira Y do di cima
+    float endY = 7.2f;   // fileira Y do di cima
 
     // glBegin/glEnd foram estao para DENTRO do laço, pois o OpenGL exige que o glBindTexture seja chamado FORA do glBegin
     for (int row = 0; row < numFileiras; ++row) {
         for (int col = 0; col < numQuadradinhos; ++col) {
             
             // Define aleatoriamente qual torcedor é desenhado baseado numa pseudo-seed de col e row
-            int tipoTorcedor = abs(row * 7 + col * 13) % NUM_TORCEDORES;
+            // regra de posicionamento na Norte. 
+            // posiciona os 4 kavalo do apokalipse apenas 1 vez (usando row e col fixos) e o restante é preenchido com Azul(0) ou Rosa(5)
+            int tipoTorcedor;
+            if (row == 0 && col == 1) tipoTorcedor = 1;      // ray
+            else if (row == 0 && col == 5) tipoTorcedor = 2; // manu
+            else if (row == 1 && col == 2) tipoTorcedor = 3; // luca
+            else if (row == 1 && col == 6) tipoTorcedor = 4; // indo
+            else tipoTorcedor = (abs(row * 7 + col * 13) % 2 == 0) ? 0 : 5; // azul(0) ou rosa(5)
             
             // define a textura baseada no estado do timer e tipoAleatorio (sprites do norte)
             if (isComemorando) {
@@ -296,7 +303,9 @@ void Campo::drawArquibancada(bool isComemorando) {
         for (int col = 0; col < numQuadradinhos; ++col) {
             
             // randomização baseada na seed
-            int tipoTorcedor = abs(row * 11 + col * 17) % NUM_TORCEDORES;
+            // Na Sul, usa apenas índices 0 (azul) e 5 (rosa)
+            int randomSeed = abs(row * 11 + col * 17);
+            int tipoTorcedor = (randomSeed % 2 == 0) ? 0 : 5;
             
             // define a textura baseada no estado do timer e tipoAleatorio (sprites do SUL agora)
             if (isComemorando) {
@@ -369,7 +378,9 @@ void Campo::drawArquibancada(bool isComemorando) {
         for (int col = 0; col < numQuadradinhos_Lat; ++col) {
             
             // randomização baseada na seed
-            int tipoTorcedor = abs(row * 19 + col * 23) % NUM_TORCEDORES;
+            // nsa Leste, usa apenas índices 0 (azul) e 5 (rosa)
+            int randomSeed = abs(row * 19 + col * 23);
+            int tipoTorcedor = (randomSeed % 2 == 0) ? 0 : 5;
             
             if (isComemorando) {
                 glBindTexture(GL_TEXTURE_2D, torcedorOesteComemoraTexture[tipoTorcedor]);
@@ -434,7 +445,9 @@ void Campo::drawArquibancada(bool isComemorando) {
         for (int col = 0; col < numQuadradinhos_Lat; ++col) {
             
             // randomização baseada na seed
-            int tipoTorcedor = abs(row * 29 + col * 31) % NUM_TORCEDORES;
+            // na Oeste, usa apenas índices 0 (azul) e 5 (rosa)
+            int randomSeed = abs(row * 29 + col * 31);
+            int tipoTorcedor = (randomSeed % 2 == 0) ? 0 : 5;
             
             if (isComemorando) {
                 glBindTexture(GL_TEXTURE_2D, torcedorOesteComemoraTexture[tipoTorcedor]);
