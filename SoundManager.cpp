@@ -52,7 +52,7 @@ void SoundManager::playChute() {
 }
 
 void SoundManager::playGol() {
-    playSound("assets/sounds/comemoracao1.mp3");
+    playSound("assets/sounds/comemoracao2.mp3");
 }
 
 void SoundManager::playApito() {
