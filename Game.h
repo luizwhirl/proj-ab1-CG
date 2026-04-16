@@ -37,6 +37,9 @@ private:
     int tempoInvincibilidade = 0;
     int spawnTimer = 0;
 
+    // controle dos 10 segundos da animação de comemoração da arquibancada
+    int tempoComemoracao = 0;
+
     static Game* instance;
 
     void setupCamera();

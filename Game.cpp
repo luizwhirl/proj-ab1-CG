@@ -188,6 +188,16 @@ void Game::init() {
                                     "assets/sprites/arquibancada/ArquibancadaC.png", 
                                     "assets/sprites/arquibancada/ArquibancadaD.png");
     
+    // carregar as sprites novas para os torcedores idle e comemoração
+    campo.loadTorcedorTextures(
+        "assets/sprites/torcedor/norte/azul-idle.png", 
+        "assets/sprites/torcedor/norte/azul-comemora.png",
+        "assets/sprites/torcedor/sul/azul-idle.png", 
+        "assets/sprites/torcedor/sul/azul-comemora.png",
+        "assets/sprites/torcedor/oeste/azul-idle.png", 
+        "assets/sprites/torcedor/oeste/azul-comemora.png"
+    );
+
     // carrega os sprites de animacao da bola junto com os carregamentos do jogo
     bola.loadTextures();
 
@@ -266,7 +276,9 @@ void Game::display() {
     
     setupCamera();
 
-    campo.draw();
+    // repassar para o campo o estado de comemoração
+    bool isComemorando = (tempoComemoracao > 0);
+    campo.draw(isComemorando);
 
     // jogadores e bola vêm primeiro
     for (int x=0; x<timeAliado.size(); x++){
@@ -463,7 +475,7 @@ void Game::atualizarIARival(){
                 }
             }
         } else if (bola.statusPosse == 2 && bola.idRival >= 0 && bola.idRival < static_cast<int>(timeRival.size())) {
-            // quem não está com a bola acompanha a jogada sem abandonar a formação.
+            // quem não está com a bola acompanha a jogada sem abandonaro a formação
             float avancoTime = clampValor((timeRival[bola.idRival].baseY - timeRival[bola.idRival].y) * 0.45f, 0.0f, 1.2f);
             float alvoX = timeRival[i].baseX + clampValor((timeRival[bola.idRival].x - timeRival[i].baseX) * 0.35f, -0.9f, 0.9f);
             float alvoY = timeRival[i].baseY - avancoTime;
@@ -559,6 +571,9 @@ void Game::updatePlayer() {
     // contagem e respawn do power up
     if (tempoSpeedBoost > 0) tempoSpeedBoost--;
     if (tempoInvincibilidade > 0) tempoInvincibilidade--;
+
+    // reduz o timer dos pulos na arquibancada
+    if (tempoComemoracao > 0) tempoComemoracao--;
 
     if (!powerUp.active) {
         spawnTimer++;
@@ -795,6 +810,9 @@ void Game::updatePlayer() {
         spawnTimer = 0;
         tempoSpeedBoost = 0;
         tempoInvincibilidade = 0;
+        
+        // dispara o timer de 10 segundos da comemoração na arquibancada
+        tempoComemoracao = 600;
 
         scoreboard.scoreAliado();
         bola.x = 0.0f;

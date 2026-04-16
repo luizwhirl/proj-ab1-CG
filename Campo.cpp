@@ -14,6 +14,14 @@ Campo::Campo() {
     arquibancadaTextureB = 0;
     arquibancadaTextureC = 0;
     arquibancadaTextureD = 0;
+
+    // inicialização dos ids norte, sul e oeste
+    torcedorNorteIdleTexture = 0;
+    torcedorNorteComemoraTexture = 0;
+    torcedorSulIdleTexture = 0;
+    torcedorSulComemoraTexture = 0;
+    torcedorOesteIdleTexture = 0;
+    torcedorOesteComemoraTexture = 0;
 }
 
 void Campo::createGrassTexture() {
@@ -130,7 +138,115 @@ void Campo::loadArquibancadaTextures(const char* filepathA, const char* filepath
     }
 }
 
-void Campo::drawArquibancada() {
+// carrega texturas distintas para a torcida norte, sul e oeste
+void Campo::loadTorcedorTextures(const char* idleNortePath, const char* comemoraNortePath, const char* idleSulPath, const char* comemoraSulPath, const char* idleOestePath, const char* comemoraOestePath) {
+    int width, height, nrChannels;
+    
+    // torcedor norte idle
+    glGenTextures(1, &torcedorNorteIdleTexture);
+    glBindTexture(GL_TEXTURE_2D, torcedorNorteIdleTexture);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    
+    unsigned char *dataIdleNorte = stbi_load(idleNortePath, &width, &height, &nrChannels, 0);
+    if (dataIdleNorte) {
+        GLenum format = (nrChannels == 4) ? GL_RGBA : GL_RGB;
+        glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, dataIdleNorte);
+        stbi_image_free(dataIdleNorte);
+    } else {
+        std::cerr << "Falha ao carregar a textura idle do torcedor norte: " << idleNortePath << std::endl;
+    }
+
+    // torcedor norte comemorando
+    glGenTextures(1, &torcedorNorteComemoraTexture);
+    glBindTexture(GL_TEXTURE_2D, torcedorNorteComemoraTexture);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    
+    unsigned char *dataComemoraNorte = stbi_load(comemoraNortePath, &width, &height, &nrChannels, 0);
+    if (dataComemoraNorte) {
+        GLenum format = (nrChannels == 4) ? GL_RGBA : GL_RGB;
+        glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, dataComemoraNorte);
+        stbi_image_free(dataComemoraNorte);
+    } else {
+        std::cerr << "Falha ao carregar a textura comemora do torcedor norte: " << comemoraNortePath << std::endl;
+    }
+
+    // torcedor sul idle
+    glGenTextures(1, &torcedorSulIdleTexture);
+    glBindTexture(GL_TEXTURE_2D, torcedorSulIdleTexture);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    
+    unsigned char *dataIdleSul = stbi_load(idleSulPath, &width, &height, &nrChannels, 0);
+    if (dataIdleSul) {
+        GLenum format = (nrChannels == 4) ? GL_RGBA : GL_RGB;
+        glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, dataIdleSul);
+        stbi_image_free(dataIdleSul);
+    } else {
+        std::cerr << "Falha ao carregar a textura idle do torcedor sul: " << idleSulPath << std::endl;
+    }
+
+    // torcedor sul comemorando
+    glGenTextures(1, &torcedorSulComemoraTexture);
+    glBindTexture(GL_TEXTURE_2D, torcedorSulComemoraTexture);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    
+    unsigned char *dataComemoraSul = stbi_load(comemoraSulPath, &width, &height, &nrChannels, 0);
+    if (dataComemoraSul) {
+        GLenum format = (nrChannels == 4) ? GL_RGBA : GL_RGB;
+        glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, dataComemoraSul);
+        stbi_image_free(dataComemoraSul);
+    } else {
+        std::cerr << "Falha ao carregar a textura comemora do torcedor sul: " << comemoraSulPath << std::endl;
+    }
+
+    // torcedor oeste idle
+    glGenTextures(1, &torcedorOesteIdleTexture);
+    glBindTexture(GL_TEXTURE_2D, torcedorOesteIdleTexture);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    
+    unsigned char *dataIdleOeste = stbi_load(idleOestePath, &width, &height, &nrChannels, 0);
+    if (dataIdleOeste) {
+        GLenum format = (nrChannels == 4) ? GL_RGBA : GL_RGB;
+        glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, dataIdleOeste);
+        stbi_image_free(dataIdleOeste);
+    } else {
+        std::cerr << "Falha ao carregar a textura idle do torcedor oeste: " << idleOestePath << std::endl;
+    }
+
+    // torcedor oeste comemorando
+    glGenTextures(1, &torcedorOesteComemoraTexture);
+    glBindTexture(GL_TEXTURE_2D, torcedorOesteComemoraTexture);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    
+    unsigned char *dataComemoraOeste = stbi_load(comemoraOestePath, &width, &height, &nrChannels, 0);
+    if (dataComemoraOeste) {
+        GLenum format = (nrChannels == 4) ? GL_RGBA : GL_RGB;
+        glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, dataComemoraOeste);
+        stbi_image_free(dataComemoraOeste);
+    } else {
+        std::cerr << "Falha ao carregar a textura comemora do torcedor oeste: " << comemoraOestePath << std::endl;
+    }
+}
+
+// método recebe bool
+void Campo::drawArquibancada(bool isComemorando) {
     glEnable(GL_TEXTURE_2D);
     glBindTexture(GL_TEXTURE_2D, arquibancadaTexture);
     glColor3f(1.0f, 1.0f, 1.0f);
@@ -149,11 +265,21 @@ void Campo::drawArquibancada() {
         glTexCoord2f(0.0f, 1.0f); glVertex2f(-largura, topoNorte);
     glEnd();
 
-    // os neguinho tao pulando so na norte
-    glDisable(GL_TEXTURE_2D); // textura desativada
+    // manter a textura ativa para o sprite e habilitar transparência
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    
+    // define a textura baseada no estado do timer (sprites do norte)
+    if (isComemorando) {
+        glBindTexture(GL_TEXTURE_2D, torcedorNorteComemoraTexture);
+    } else {
+        glBindTexture(GL_TEXTURE_2D, torcedorNorteIdleTexture);
+    }
+    glColor3f(1.0f, 1.0f, 1.0f);
 
     float tempo = glutGet(GLUT_ELAPSED_TIME) / 1000.0f; 
-    float tam = 0.06f; // tamanh do kwadrado 
+    // 0.2f - tamanho dos jogadores no jogo
+    float tam = 0.2f; // tamanh do kwadrado 
 
     int numFileiras = 2;
     int numQuadradinhos = 8;
@@ -176,23 +302,21 @@ void Campo::drawArquibancada() {
             
             float offset = x * 3.5f + y * 2.5f; 
             
-            // pulo suave de 
-            float pulo = (std::sin(tempo * 16.0f + offset) + 1.0f) * 0.5f * 0.12f; 
-
-            // random cores 
-            float corMix = std::sin(x * 12.0f + y * 8.0f);
-            if (corMix > 0.5f) glColor3f(0.9f, 0.1f, 0.1f);
-            else if (corMix > -0.5f) glColor3f(1.0f, 1.0f, 1.0f);
-            else glColor3f(0.1f, 0.1f, 0.1f);
+            // o pulo só acontece se isComemorando for true, do contrário ficam no chão
+            float pulo = 0.0f;
+            if (isComemorando) {
+                pulo = (std::sin(tempo * 16.0f + offset) + 1.0f) * 0.5f * 0.12f; 
+            }
 
             float qX = x;
             float qY = y + pulo;
 
             // quadradis
-            glVertex2f(qX - tam, qY - tam);
-            glVertex2f(qX + tam, qY - tam);
-            glVertex2f(qX + tam, qY + tam);
-            glVertex2f(qX - tam, qY + tam);
+            // mapeamento de textura em vez de apenas vertex
+            glTexCoord2f(0.0f, 0.0f); glVertex2f(qX - tam, qY - tam);
+            glTexCoord2f(1.0f, 0.0f); glVertex2f(qX + tam, qY - tam);
+            glTexCoord2f(1.0f, 1.0f); glVertex2f(qX + tam, qY + tam);
+            glTexCoord2f(0.0f, 1.0f); glVertex2f(qX - tam, qY + tam);
         }
     }
     glEnd();
@@ -216,6 +340,53 @@ void Campo::drawArquibancada() {
         glTexCoord2f(0.0f, 1.0f); glVertex2f(-largura, baseSul);
     glEnd();
 
+    // os neguinho agora pulam na sul tambem, do mesmo jeitinho que na norte
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    
+    // define a textura baseada no estado do timer (sprites do SUL agora)
+    if (isComemorando) {
+        glBindTexture(GL_TEXTURE_2D, torcedorSulComemoraTexture);
+    } else {
+        glBindTexture(GL_TEXTURE_2D, torcedorSulIdleTexture);
+    }
+    glColor3f(1.0f, 1.0f, 1.0f);
+
+    // inverte as coordenadas em Y para colocar os sprites sobre o concreto da sul
+    float startY_Sul = -6.66f; // fileira Y da sul
+    float endY_Sul = -7.0f;    // fileira Y da sul
+
+    glBegin(GL_QUADS);
+    for (int row = 0; row < numFileiras; ++row) {
+        for (int col = 0; col < numQuadradinhos; ++col) {
+            
+            // interpola linearmente a posição
+            float x = startX + col * ((endX - startX) / (numQuadradinhos - 1));
+            float y = startY_Sul + row * ((endY_Sul - startY_Sul) / (numFileiras - 1));
+            
+            float offset = x * 3.5f + y * 2.5f; 
+            
+            // mesmo pulo suave de antes (com a mesma lógica)
+            float pulo = 0.0f;
+            if (isComemorando) {
+                pulo = (std::sin(tempo * 16.0f + offset) + 1.0f) * 0.5f * 0.12f; 
+            }
+
+            float qX = x;
+            float qY = y + pulo;
+
+            // mapeamento do sprite dos torcedores
+            glTexCoord2f(0.0f, 0.0f); glVertex2f(qX - tam, qY - tam);
+            glTexCoord2f(1.0f, 0.0f); glVertex2f(qX + tam, qY - tam);
+            glTexCoord2f(1.0f, 1.0f); glVertex2f(qX + tam, qY + tam);
+            glTexCoord2f(0.0f, 1.0f); glVertex2f(qX - tam, qY + tam);
+        }
+    }
+    glEnd();
+
+    // reativa a textura normal para garantir que a leste/oeste apareça
+    glEnable(GL_TEXTURE_2D);
+
     // link da arkibankada lestee
     glBindTexture(GL_TEXTURE_2D, arquibancadaTextureC);
     glColor3f(1.0f, 1.0f, 1.0f);
@@ -234,6 +405,52 @@ void Campo::drawArquibancada() {
         glTexCoord2f(0.0f, 1.0f); glVertex2f(xInternoLeste, yTopoLeste); // sup esq
     glEnd();
 
+    // os neguinho pulam na leste tambem, aproveitando as texturas do oeste de forma espelhada
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    
+    if (isComemorando) {
+        glBindTexture(GL_TEXTURE_2D, torcedorOesteComemoraTexture);
+    } else {
+        glBindTexture(GL_TEXTURE_2D, torcedorOesteIdleTexture);
+    }
+    glColor3f(1.0f, 1.0f, 1.0f);
+
+    float startX_Leste = 3.83f; // fileira X mais perto (concreto começa em 3.5)
+    float endX_Leste = 5.03f;   // fileira X mais longe (concreto vai até 5.83)
+    float startY_Lat = -3.4f;   // cobrir a lateral toda (campo de -7.23 a 7.23)
+    float endY_Lat = 2.4f;
+    int numFileiras_Lat = 2;    // duas fileiras na lateral tambem
+    int numQuadradinhos_Lat = 12; // mais quadrados para cobrir toda extensão da lateral
+
+    glBegin(GL_QUADS);
+    for (int row = 0; row < numFileiras_Lat; ++row) {
+        for (int col = 0; col < numQuadradinhos_Lat; ++col) {
+            
+            float x = startX_Leste + row * ((endX_Leste - startX_Leste) / (numFileiras_Lat - 1));
+            float y = startY_Lat + col * ((endY_Lat - startY_Lat) / (numQuadradinhos_Lat - 1));
+            
+            float offset = x * 3.5f + y * 2.5f; 
+            float pulo = 0.0f;
+            if (isComemorando) {
+                pulo = (std::sin(tempo * 16.0f + offset) + 1.0f) * 0.5f * 0.12f; 
+            }
+
+            float qX = x;
+            float qY = y + pulo;
+
+            // mapeamento do sprite dos torcedores Leste (X INVERTIDO para flip horizontal)
+            glTexCoord2f(1.0f, 0.0f); glVertex2f(qX - tam, qY - tam); // bottomLeft recebe original bottomRight
+            glTexCoord2f(0.0f, 0.0f); glVertex2f(qX + tam, qY - tam); // bottomRight recebe original bottomLeft
+            glTexCoord2f(0.0f, 1.0f); glVertex2f(qX + tam, qY + tam); // topRight recebe original topLeft
+            glTexCoord2f(1.0f, 1.0f); glVertex2f(qX - tam, qY + tam); // topLeft recebe original topRight
+        }
+    }
+    glEnd();
+
+    // reativa a textura normal
+    glEnable(GL_TEXTURE_2D);
+
     // link da arkibankada oestee
     glBindTexture(GL_TEXTURE_2D, arquibancadaTextureD);
     glColor3f(1.0f, 1.0f, 1.0f);
@@ -250,6 +467,45 @@ void Campo::drawArquibancada() {
         glTexCoord2f(1.0f, 0.0f); glVertex2f(xInternoOeste, yBaseOeste); // inf dir 
         glTexCoord2f(1.0f, 1.0f); glVertex2f(xInternoOeste, yTopoOeste); // sup dir 
         glTexCoord2f(0.0f, 1.0f); glVertex2f(xExternoOeste, yTopoOeste); // sup esq
+    glEnd();
+
+    // os neguinho pulam na oeste tambem
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    
+    if (isComemorando) {
+        glBindTexture(GL_TEXTURE_2D, torcedorOesteComemoraTexture);
+    } else {
+        glBindTexture(GL_TEXTURE_2D, torcedorOesteIdleTexture);
+    }
+    glColor3f(1.0f, 1.0f, 1.0f);
+
+    float startX_Oeste = -5.16f; // fileira X mais longe (concreto vai até -5.83)
+    float endX_Oeste = -3.83f;   // fileira X mais perto (concreto começa em -3.5)
+
+    glBegin(GL_QUADS);
+    for (int row = 0; row < numFileiras_Lat; ++row) {
+        for (int col = 0; col < numQuadradinhos_Lat; ++col) {
+            
+            float x = startX_Oeste + row * ((endX_Oeste - startX_Oeste) / (numFileiras_Lat - 1));
+            float y = startY_Lat + col * ((endY_Lat - startY_Lat) / (numQuadradinhos_Lat - 1));
+            
+            float offset = x * 3.5f + y * 2.5f; 
+            float pulo = 0.0f;
+            if (isComemorando) {
+                pulo = (std::sin(tempo * 16.0f + offset) + 1.0f) * 0.5f * 0.12f; 
+            }
+
+            float qX = x;
+            float qY = y + pulo;
+
+            // mapeamento normal do sprite dos torcedores oeste
+            glTexCoord2f(0.0f, 0.0f); glVertex2f(qX - tam, qY - tam);
+            glTexCoord2f(1.0f, 0.0f); glVertex2f(qX + tam, qY - tam);
+            glTexCoord2f(1.0f, 1.0f); glVertex2f(qX + tam, qY + tam);
+            glTexCoord2f(0.0f, 1.0f); glVertex2f(qX - tam, qY + tam);
+        }
+    }
     glEnd();
 
     glDisable(GL_TEXTURE_2D);
@@ -320,7 +576,8 @@ void Campo::drawFieldLines() {
     glEnd();
 }
 
-void Campo::draw() {
+// bool recebida e passada adiante
+void Campo::draw(bool isComemorando) {
     glEnable(GL_TEXTURE_2D);
     glBindTexture(GL_TEXTURE_2D, grassTexture);
     
@@ -362,7 +619,8 @@ void Campo::draw() {
     drawFieldLines();
 
     // Desenhando a arquibancada por baixo
-    drawArquibancada();
+    // propaga o estado para a arquibancada
+    drawArquibancada(isComemorando);
 }
 
 void Campo::resolverColisaoLimites(float& posX, float& posY, float raio) {

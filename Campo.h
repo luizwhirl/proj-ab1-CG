@@ -12,11 +12,19 @@ private:
     GLuint arquibancadaTextureC; 
     GLuint arquibancadaTextureD;
 
+    // ids das texturas dos torcedores separados por norte, sul e oeste
+    GLuint torcedorNorteIdleTexture;
+    GLuint torcedorNorteComemoraTexture;
+    GLuint torcedorSulIdleTexture;
+    GLuint torcedorSulComemoraTexture;
+    GLuint torcedorOesteIdleTexture;
+    GLuint torcedorOesteComemoraTexture;
+
     void drawCircle(float cx, float cy, float r, int num_segments);
     void drawFieldLines();
 
     // metodos para desenhar os placeholders
-    void drawArquibancada();
+    void drawArquibancada(bool isComemorando);
 
 public:
     Campo();
@@ -26,7 +34,12 @@ public:
     
     // carregar as arquibancadas
     void loadArquibancadaTextures(const char* filepathA, const char* filepathB, const char* filepathC, const char* filepathD); 
-    void draw();
+    
+    // função para carregar os sprites dos torcedores (separando norte, sul e oeste/leste)
+    void loadTorcedorTextures(const char* idleNortePath, const char* comemoraNortePath, const char* idleSulPath, const char* comemoraSulPath, const char* idleOestePath, const char* comemoraOestePath);
+
+    // parâmetro isComemorando, com valor padrão false
+    void draw(bool isComemorando = false);
 
     // metodo para barrar a saida do gramado
     void resolverColisaoLimites(float& posX, float& posY, float raio);
