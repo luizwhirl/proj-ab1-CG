@@ -3,6 +3,29 @@
 Este é o repositório do "Futebolzinho do Chiquinho", uma aplicação interativa desenvolvida em C++ com OpenGL/GLUT. O foco aqui é a renderização procedural do mundo, manipulação de matrizes de projeção, implementação de Inteligência Artificial básica, detecção de colisões e a ponte entre o paradigma Orientado a Objetos e funções procedurais.
 
 ---
+## Dependências, Bibliotecas e Ferramentas 
+
+Para a compilação, além das bibliotecas padrão do OpenGL (`-lfreeglut -lopengl32 -lglu32`), o projeto depende do **irrKlang** para a engine de áudio.
+
+É necessário linkar a biblioteca estática durante a compilação. Um exemplo de compilação com g++ (MinGW):
+```bash
+g++ *.cpp ./irrKlang/lib/Win32-gcc/libirrKlang.a -o main.exe -I./irrKlang/include -lopengl32 -lglu32 -lfreeglut
+```
+
+### Importação de Imagens
+Para importar as imagens para o C++, e trabalharmos com suas texturas, utilizamos a biblioteca [stb_image.h](https://github.com/nothings/stb?tab=readme-ov-file). 
+
+Ela é uma solução leve, eficiente e single-header, o que facilita muito a integração ao projeto sem a necessidade de configurar dependências externas.
+
+Responsável por ler os arquivos de imagem do jogo direto do disco (como os arquivos ```.png``` que contêm os sprites dos jogadores, do campo, da bola e da arquibancada) e decodificá-los em dados brutos de pixels. Esses dados são então passados para o OpenGL, que os transforma em texturas 2D para que possam ser finalmente renderizados e desenhados na tela durante o jogo.
+
+### Outras ferramentas utilizadas
+- **Aseprite**: Para criação de cenários e sprites dos jogadores/torcedores (você pode vê-los [aqui](https://drive.google.com/drive/folders/1zVDBRiEg8mDZ4Hv7Y7AT7VAMn4HnIKa7?usp=sharing))
+- **Visual Studio Code**: Desenvolvimento e compilação
+- **Gemini (IA)**: Dúvidas gerais sobre bibliotecas, funções, métodos, etc. 
+- **Github Copilot**: Usado para a agilidade durante a escrita do código (Como adicionar comentários ágeis, sugestão da escrita, etc)
+
+---
 
 ## Controles do Jogo
 
@@ -80,13 +103,3 @@ Quando o zoom é ativado pelo mouse, a projeção ortogonal (`glOrtho`) é recal
 
 ### 6. Scoreboard e Projeção Ortogonal HUD
 A interface de placar é desenhada *por cima* do mundo 2D utilizando `glPushMatrix` e `glOrtho` focado nas dimensões literais da tela. Os limites da projeção coincidem com os pixels da janela (0,0 no topo-esquerdo).
-
----
-
-## Notas sobre Áudio e Dependências
-
-Para a compilação, além das bibliotecas padrão do OpenGL (`-lfreeglut -lopengl32 -lglu32`), o projeto depende do **irrKlang** para a engine de áudio.
-
-É necessário linkar a biblioteca estática durante a compilação. Um exemplo de compilação com g++ (MinGW):
-```bash
-g++ *.cpp ./irrKlang/lib/Win32-gcc/libirrKlang.a -o main.exe -I./irrKlang/include -lopengl32 -lglu32 -lfreeglut
